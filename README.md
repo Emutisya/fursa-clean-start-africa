@@ -1,10 +1,58 @@
 # Fursa | Clean Start Africa
 
-**A skill-first discovery prototype for a future where practical experience can travel across institutions and borders.**
+### Your skills should travel further than your past.
 
-People rebuilding their lives after incarceration may have valuable practical skills but lack recognized evidence, trusted introductions or clear routes to assessment. Fursa explores a bridge from **selected skills → a skills passport → fictional opportunities → evidence gaps → simulated assessment pathways**.
+**Fursa is a skill-first opportunity discovery engine.** It assembles a
+user-selected skills passport, matches those skills to opportunities and
+assessment pathways, and makes missing evidence visible so a human can help
+plan the next step.
 
-This is a **working, offline ML research prototype**, not an employment service. It neither asks about incarceration nor uses it in inference. Every opportunity, sample and pathway is fictional. No credentials, offers, hiring decisions or eligibility decisions are issued.
+[![CI](https://github.com/Emutisya/fursa-clean-start-africa/actions/workflows/ci.yml/badge.svg)](https://github.com/Emutisya/fursa-clean-start-africa/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+## The invention thesis
+
+Learning a skill and having that skill recognized are different problems.
+For people rebuilding their lives after incarceration, practical experience
+may not arrive with the evidence, introductions or recognition needed to
+make the next opportunity accessible.
+
+Fursa explores a bridge between **what someone can do**, **what evidence they
+can choose to present**, and **where that evidence needs human assessment**.
+It does not turn a person's history into a prediction of their future.
+Incarceration is the problem context, not a model input.
+
+The global ambition is a learner-controlled recognition infrastructure: portable
+evidence, transparent assessment routes, and skill-based discovery across
+institutions and borders. Recognition would come from accountable assessors and
+qualified issuers, not an AI-generated certificate.
+
+## Experience the working system
+
+| Step | What Fursa does today |
+| --- | --- |
+| Select | Accepts skills from a bounded synthetic catalog |
+| Assemble | Builds an explicitly unverified skills passport from selected skills and evidence |
+| Discover | Uses learned TF-IDF vectors to rank fictional opportunities and simulated pathways |
+| Explain | Shows skill overlap, matching terms and missing evidence |
+| Carry | Exports a user-controlled synthetic passport as JSON |
+| Review | Keeps competence assessment, credential recognition and hiring outside the model |
+
+The interactive dashboard performs actual Python-backed inference. Evidence
+selections change the gap explanation, not the opportunity ranking. A missing
+match identifies a coverage gap, not a person's lack of potential.
+
+### Design choices that matter
+
+- **Skills lead.** Criminal history and protected characteristics are outside the input contract.
+- **Discovery is not selection.** No employability score or automated hiring decision.
+- **Evidence is explicit.** A checked box never becomes a verified qualification.
+- **The core is portable.** Local inference needs no external APIs or downloaded weights.
+
+**Current release:** a working local ML research prototype. Opportunities,
+evidence and assessment pathways are fictional. It does not issue recognized
+credentials, submit applications, place people in jobs or operate an employment
+service.
 
 ## Quickstart
 
@@ -127,7 +175,7 @@ Close the dedicated browser process and server afterward, and remove the ignored
 - Evidence checkboxes are simulations, not proofs. They neither authenticate artifacts nor establish competence. Human advisers and assessors must independently check safety, validity, recognition and alternatives.
 - No hiring or denial automation. No partner claims, measured social impact, placement claims or recognized credentials.
 
-## Global roadmap: aspirations, not commitments
+## From working core to portable recognition infrastructure
 
 1. **Community-led evidence design.** Work with people with lived experience and civil-society organizations to define useful, voluntary evidence without disclosing incarceration. Establish consent, deletion, appeals and independent oversight before any pilot.
 2. **Portable, verifiable evidence.** Explore open verifiable-credential standards, learner-controlled wallets, minimum disclosure, issuer verification, revocation and accessible offline presentation. A signed claim must not become a universal employability score.
@@ -138,8 +186,14 @@ Close the dedicated browser process and server afterward, and remove the ignored
 
 ## Contributing and publication
 
-This directory is designed to become its own public repository, `emutisya/fursa-clean-start-africa`. It includes an MIT license and GitHub Actions running tests, training, reproducible metric comparison and CLI inference on Windows/Linux with Python 3.11/3.13. CI uses platform-provided checkout/setup actions; the application itself has no network dependencies.
+Published at [Emutisya/fursa-clean-start-africa](https://github.com/Emutisya/fursa-clean-start-africa).
+The repository includes an MIT license and GitHub Actions running tests,
+training, reproducible metric comparison and CLI inference on Windows/Linux
+with Python 3.11/3.13. CI uses platform-provided checkout/setup actions; the
+application itself has no network dependencies.
 
-Keep additions fictional until a consented, reviewed research protocol exists. Add focused tests for behavior changes and update the model card and recorded evaluation. Do not add personal biographies or sensitive labels to training data. No Git repository, commit or push is created by the project setup.
+Keep additions fictional until a consented, reviewed research protocol exists.
+Add focused tests for behavior changes and update the model card and recorded
+evaluation. Do not add personal biographies or sensitive labels to training data.
 
 **License:** [MIT](LICENSE).
