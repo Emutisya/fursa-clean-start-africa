@@ -22,6 +22,8 @@ def main():
     serve = sub.add_parser("serve")
     serve.add_argument("--port", type=int, default=8765)
     args = parser.parse_args()
+    if args.command == "serve" and not 0 <= args.port <= 65535:
+        parser.error("--port must be between 0 and 65535; use 0 to choose an available port.")
     if args.command == "serve":
         server = make_server(args.port)
         print(f"Synthetic demo: http://127.0.0.1:{server.server_port}", flush=True)

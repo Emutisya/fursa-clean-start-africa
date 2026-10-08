@@ -1,6 +1,9 @@
 import http.client
 import json
 import math
+from pathlib import Path
+import subprocess
+import sys
 import threading
 import unittest
 
@@ -8,6 +11,22 @@ from fursa.catalog import corpus
 from fursa.evaluate import CASES, evaluate
 from fursa.model import Matcher, Tfidf
 from fursa.server import make_server
+
+
+class CLITests(unittest.TestCase):
+    def test_invalid_ports_return_actionable_errors(self):
+        for port in ("-1", "65536", "999999999999999999999"):
+            with self.subTest(port=port):
+                result = subprocess.run(
+                    [sys.executable, "-m", "fursa", "serve", "--port", port],
+                    cwd=Path(__file__).resolve().parents[1],
+                    text=True, capture_output=True, timeout=10,
+                )
+                self.assertEqual(result.returncode, 2)
+                self.assertIn("--port must be between 0 and 65535", result.stderr)
+                self.assertIn("use 0 to choose an available port", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertEqual(result.stdout, "")
 
 
 class ModelTests(unittest.TestCase):
