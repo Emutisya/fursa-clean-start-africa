@@ -56,6 +56,13 @@ service.
 
 ## Quickstart
 
+Clone the standalone project:
+
+```powershell
+git clone https://github.com/Emutisya/fursa-clean-start-africa.git
+Set-Location fursa-clean-start-africa
+```
+
 Python **3.11 or newer**. No third-party Python dependencies, installation, API keys, network access or downloaded weights are needed.
 
 From this project's directory, in PowerShell:
@@ -67,6 +74,22 @@ python -m fursa serve
 Open **http://127.0.0.1:8765**. Try Workshop maker, Energy learner, Enterprise helper or Explore a gap. Choose skills, optionally attach synthetic evidence, then explore. Export downloads only the selected, explicitly unverified synthetic passport as JSON.
 
 The HTML is a single file with inline styles and scripts: `web\index.html`. Its layout can be previewed directly, but **learned inference requires the local Python server**, not `file://`. There is no fake JavaScript fallback. Use `?clawpilotTheme=dark` or `?clawpilotTheme=light` to override the system theme.
+
+### Run alongside the other projects
+
+All four projects default to port 8765. Use a separate terminal and port 8767
+for Fursa when running the collection together:
+
+```powershell
+python -m fursa serve --port 8767
+```
+
+Open **http://127.0.0.1:8767**; `/api/health` reports model readiness. Keep MCP
+Shield on 8765, the Guardian on 8766, and Maternity Health Copilot on 8768.
+Alternatively, `--port 0` selects an available port and prints its URL. Valid
+ports are 0 through 65535. An occupied port produces a startup error with a
+recovery instruction, not a traceback; choose another port rather than stopping
+an unrelated process.
 
 ### CLI
 
