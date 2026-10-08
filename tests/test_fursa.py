@@ -2,6 +2,7 @@ import http.client
 import json
 import math
 from pathlib import Path
+import socket
 import subprocess
 import sys
 import threading
@@ -14,6 +15,22 @@ from fursa.server import make_server
 
 
 class CLITests(unittest.TestCase):
+    def test_occupied_port_explains_how_to_recover(self):
+        with socket.socket() as listener:
+            listener.bind(("127.0.0.1", 0))
+            listener.listen()
+            port = listener.getsockname()[1]
+            result = subprocess.run(
+                [sys.executable, "-m", "fursa", "serve", "--port", str(port)],
+                cwd=Path(__file__).resolve().parents[1],
+                text=True, capture_output=True, timeout=10,
+            )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn(f"Could not start the local dashboard on port {port}", result.stderr)
+        self.assertIn("--port 0", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertEqual(result.stdout, "")
+
     def test_invalid_ports_return_actionable_errors(self):
         for port in ("-1", "65536", "999999999999999999999"):
             with self.subTest(port=port):

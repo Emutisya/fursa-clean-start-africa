@@ -25,7 +25,14 @@ def main():
     if args.command == "serve" and not 0 <= args.port <= 65535:
         parser.error("--port must be between 0 and 65535; use 0 to choose an available port.")
     if args.command == "serve":
-        server = make_server(args.port)
+        try:
+            server = make_server(args.port)
+        except OSError as error:
+            parser.exit(
+                2,
+                f"Error: Could not start the local dashboard on port {args.port}. "
+                f"Choose another --port or use --port 0 to select an available port. ({error})\n",
+            )
         print(f"Synthetic demo: http://127.0.0.1:{server.server_port}", flush=True)
         try:
             server.serve_forever()
