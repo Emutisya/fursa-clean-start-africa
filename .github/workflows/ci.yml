@@ -1,0 +1,22 @@
+name: Offline prototype checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11", "3.13"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m unittest discover -s tests -v
+      - run: python -m fursa train
+      - run: python -m fursa evaluate --output evaluation-observed.json
+      - name: Verify published synthetic metrics
+        run: python -c "import json; from pathlib import Path; assert json.loads(Path('evaluation-observed.json').read_text()) == json.loads(Path('evaluation.json').read_text())"
+      - run: python -m fursa match --skills "carpentry,welding" --evidence "e-carpentry"

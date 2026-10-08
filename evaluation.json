@@ -1,0 +1,201 @@
+{
+  "fit_documents": 34,
+  "vocabulary_size": 87,
+  "corpus_sha256": "98a40f4fb83920c3f9eba0444961c33a14b7e6caa4dfddefd3e64936a42139e2",
+  "held_out_cases": 14,
+  "positive_cases": 12,
+  "negative_cases": 2,
+  "mean_recall_at_3": 0.8333333333333334,
+  "mean_precision_at_3": 0.3055555555555555,
+  "mean_reciprocal_rank": 0.8333333333333334,
+  "negative_abstention_rate": 1.0,
+  "cases": [
+    {
+      "id": "q01",
+      "query": "timber furniture measuring assembly",
+      "relevant": [
+        "o-timber"
+      ],
+      "ranked": [
+        "o-timber"
+      ],
+      "recall_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null
+    },
+    {
+      "id": "q02",
+      "query": "metal joints welding fabrication",
+      "relevant": [
+        "o-metal"
+      ],
+      "ranked": [
+        "o-metal"
+      ],
+      "recall_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null
+    },
+    {
+      "id": "q03",
+      "query": "photovoltaic panels circuits wiring",
+      "relevant": [
+        "o-solar"
+      ],
+      "ranked": [
+        "o-solar"
+      ],
+      "recall_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null
+    },
+    {
+      "id": "q04",
+      "query": "garments fabric sewing stitching",
+      "relevant": [
+        "o-textile"
+      ],
+      "ranked": [
+        "o-textile"
+      ],
+      "recall_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null
+    },
+    {
+      "id": "q05",
+      "query": "cooking preparation hygiene kitchen",
+      "relevant": [
+        "o-kitchen"
+      ],
+      "ranked": [
+        "o-kitchen"
+      ],
+      "recall_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null
+    },
+    {
+      "id": "q06",
+      "query": "invoices reconciliation bookkeeping formulas",
+      "relevant": [
+        "o-accounts"
+      ],
+      "ranked": [
+        "o-accounts",
+        "o-dispatch"
+      ],
+      "recall_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null
+    },
+    {
+      "id": "q07",
+      "query": "warehouse dispatch delivery enquiries",
+      "relevant": [
+        "o-dispatch"
+      ],
+      "ranked": [
+        "o-dispatch"
+      ],
+      "recall_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null
+    },
+    {
+      "id": "q08",
+      "query": "seedlings irrigation horticulture",
+      "relevant": [
+        "o-nursery"
+      ],
+      "ranked": [
+        "o-nursery"
+      ],
+      "recall_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null
+    },
+    {
+      "id": "q09",
+      "query": "pipes leaks plumbing fittings",
+      "relevant": [
+        "o-water"
+      ],
+      "ranked": [
+        "o-water"
+      ],
+      "recall_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null
+    },
+    {
+      "id": "q10",
+      "query": "furniture timber welding metal",
+      "relevant": [
+        "o-metal",
+        "o-timber"
+      ],
+      "ranked": [
+        "o-timber",
+        "o-metal"
+      ],
+      "recall_at_3": 1.0,
+      "precision_at_3": 0.6666666666666666,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null
+    },
+    {
+      "id": "q11",
+      "query": "astronomy telescope galaxies",
+      "relevant": [],
+      "ranked": [],
+      "recall_at_3": null,
+      "precision_at_3": null,
+      "reciprocal_rank": null,
+      "correct_abstention": true
+    },
+    {
+      "id": "q12",
+      "query": "xylophone sonatas oboe",
+      "relevant": [],
+      "ranked": [],
+      "recall_at_3": null,
+      "precision_at_3": null,
+      "reciprocal_rank": null,
+      "correct_abstention": true
+    },
+    {
+      "id": "q13",
+      "query": "woodwork cabinetry dovetails sanding",
+      "relevant": [
+        "o-timber"
+      ],
+      "ranked": [],
+      "recall_at_3": 0.0,
+      "precision_at_3": 0.0,
+      "reciprocal_rank": 0,
+      "correct_abstention": null
+    },
+    {
+      "id": "q14",
+      "query": "tailor clothing needle alteration",
+      "relevant": [
+        "o-textile"
+      ],
+      "ranked": [],
+      "recall_at_3": 0.0,
+      "precision_at_3": 0.0,
+      "reciprocal_rank": 0,
+      "correct_abstention": null
+    }
+  ]
+}

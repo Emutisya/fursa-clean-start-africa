@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fursa | Clean Start Africa · Synthetic skills discovery</title>
+<script>
+  (() => {
+    const param = new URLSearchParams(window.location.search).get("clawpilotTheme");
+    const theme =
+      param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --cp-bg: #f7f4ef;
+  --cp-bg-elevated: #fcfbf8;
+  --cp-surface: #ffffff;
+  --cp-surface-soft: #f5f5f5;
+  --cp-border: #dedede;
+  --cp-border-strong: #919191;
+  --cp-text: #242424;
+  --cp-text-muted: #5c5c5c;
+  --cp-text-soft: #6f6f6f;
+  --cp-accent: #b11f4b;
+  --cp-accent-hover: #9a1a41;
+  --cp-accent-soft: rgba(177, 31, 75, 0.08);
+  --cp-accent-fg: #ffffff;
+  --cp-success: #16a34a;
+  --cp-danger: #dc2626;
+  --cp-warning: #f59e0b;
+  --cp-link: #0078d4;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+  --cp-overlay: rgba(255, 255, 255, 0.8);
+  --cp-panel: rgba(255, 255, 255, 0.86);
+  --cp-panel-strong: rgba(255, 255, 255, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.55);
+  --cp-highlight: rgba(177, 31, 75, 0.12);
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --cp-bg: #3d3b3a;
+  --cp-bg-elevated: #343231;
+  --cp-surface: #292929;
+  --cp-surface-soft: #2e2e2e;
+  --cp-border: #474747;
+  --cp-border-strong: #5f5f5f;
+  --cp-text: #dedede;
+  --cp-text-muted: #919191;
+  --cp-text-soft: #b0b0b0;
+  --cp-accent: #fd8ea1;
+  --cp-accent-hover: #fb7b91;
+  --cp-accent-soft: rgba(253, 142, 161, 0.14);
+  --cp-accent-fg: #1a1a1a;
+  --cp-success: #4ade80;
+  --cp-danger: #f87171;
+  --cp-warning: #fbbf24;
+  --cp-link: #4da6ff;
+  --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+  --cp-overlay: rgba(41, 41, 41, 0.88);
+  --cp-panel: rgba(41, 41, 41, 0.72);
+  --cp-panel-strong: rgba(41, 41, 41, 0.96);
+  --cp-sheen: rgba(255, 255, 255, 0.04);
+  --cp-highlight: rgba(253, 142, 161, 0.12);
+}
+* { box-sizing:border-box }
+body { margin:0; background:var(--cp-bg); color:var(--cp-text); font-family:"Segoe UI",Aptos,Calibri,-apple-system,BlinkMacSystemFont,sans-serif; line-height:1.55 }
+header { background:var(--cp-surface); border-bottom:1px solid var(--cp-border) }
+.nav { max-width:1280px; margin:auto; padding:20px 32px; display:flex; justify-content:space-between; align-items:center; gap:16px }
+.brand { font-size:24px; font-weight:750; letter-spacing:-.8px }
+.brand span { color:var(--cp-accent) }
+.subbrand { font-size:12px; letter-spacing:2px; color:var(--cp-text-muted); text-transform:uppercase }
+.pill,.tag { display:inline-block; padding:4px 10px; border-radius:10px; background:var(--cp-accent-soft); color:var(--cp-accent); font-size:12px; font-weight:650 }
+main { max-width:1280px; padding:32px; margin:auto }
+.hero { display:grid; grid-template-columns:1.8fr 1fr; gap:40px; align-items:center; margin:8px 0 28px }
+.eyebrow { color:var(--cp-accent); font-size:12px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase }
+h1 { font-size:clamp(32px,4vw,48px); line-height:1.1; letter-spacing:-1.5px; margin:12px 0 16px; max-width:680px }
+h2 { font-size:22px; margin:0 0 8px; letter-spacing:-.4px }
+h3 { font-size:18px; margin:8px 0 }
+p { margin:8px 0 16px }
+.muted { color:var(--cp-text-muted) }
+.small { font-size:13px }
+.promise { padding:20px 24px; border-left:3px solid var(--cp-accent); background:var(--cp-bg-elevated); border-radius:0 10px 10px 0 }
+.notice { border:1px solid var(--cp-border); border-radius:10px; background:var(--cp-surface); padding:12px 16px; margin-bottom:24px; font-size:13px }
+.layout { display:grid; grid-template-columns:360px 1fr; gap:24px; align-items:start }
+.panel,.match { padding:24px; border:1px solid var(--cp-border); border-radius:16px; background:var(--cp-surface) }
+.step { font-size:12px; color:var(--cp-accent); font-weight:700; letter-spacing:1px }
+.presets { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 24px }
+button { font:inherit; cursor:pointer; border:1px solid var(--cp-border); color:var(--cp-text); background:var(--cp-surface); border-radius:10px; padding:8px 12px }
+button:hover { border-color:var(--cp-accent); background:var(--cp-accent-soft) }
+button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible { outline:3px solid var(--cp-accent); outline-offset:3px }
+button.primary { color:var(--cp-accent-fg); background:var(--cp-accent); border-color:var(--cp-accent); font-weight:650; width:100%; padding:12px }
+button.primary:hover { background:var(--cp-accent-hover) }
+button:disabled { opacity:.55; cursor:wait }
+.chips { display:flex; flex-wrap:wrap; gap:6px; margin:12px 0 16px }
+.chip { font-size:12px; padding:6px 10px }
+.chip[aria-pressed="true"] { background:var(--cp-accent-soft); color:var(--cp-accent); border-color:var(--cp-accent) }
+label { display:block; font-size:13px; font-weight:650; margin:16px 0 8px }
+textarea { resize:vertical; min-height:76px; width:100%; padding:12px; font:inherit; color:var(--cp-text); background:var(--cp-bg-elevated); border:1px solid var(--cp-border); border-radius:10px }
+.evidence label { display:flex; gap:8px; align-items:start; font-weight:400; margin:8px 0 }
+input[type="checkbox"] { accent-color:var(--cp-accent); margin-top:5px }
+.divider { border:0; border-top:1px solid var(--cp-border); margin:24px 0 }
+.passport { background:var(--cp-bg-elevated); border:1px dashed var(--cp-border-strong); padding:16px; border-radius:10px; margin:20px 0 }
+.passport p { margin:4px 0 12px }
+.result-head { display:flex; justify-content:space-between; align-items:start; gap:12px; margin-bottom:16px }
+.match { margin-bottom:16px }
+.match-top { display:flex; align-items:center; justify-content:space-between; gap:12px }
+.rank { color:var(--cp-accent); font-size:12px; font-weight:700 }
+.score { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text-muted); font-size:13px }
+.tags { display:flex; flex-wrap:wrap; gap:6px; margin:12px 0 }
+.tag { background:var(--cp-surface-soft); color:var(--cp-text-muted); font-weight:400 }
+.explain { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding-top:16px; border-top:1px solid var(--cp-border) }
+.explain strong { display:block; font-size:13px; margin-bottom:4px }
+.explain p { font-size:13px; margin:4px 0 8px; color:var(--cp-text-muted) }
+details { margin-top:12px; font-size:13px }
+summary { cursor:pointer; color:var(--cp-link); padding:4px 0 }
+li { margin:6px 0 }
+.pathways { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:16px }
+.pathway { background:var(--cp-bg-elevated); border:1px solid var(--cp-border); padding:16px; border-radius:10px }
+.pathway h3 { font-size:15px }
+.empty { padding:40px 24px; border:1px dashed var(--cp-border-strong); border-radius:16px; background:var(--cp-bg-elevated) }
+#status { min-height:24px; font-size:13px; color:var(--cp-text-muted); margin:12px 0 }
+#status.error { color:var(--cp-danger) }
+footer { border-top:1px solid var(--cp-border); padding:24px 0; margin-top:32px; font-size:12px; color:var(--cp-text-muted) }
+.method { margin-top:24px; background:var(--cp-bg-elevated); border:1px solid var(--cp-border); border-radius:10px; padding:16px 20px }
+code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text) }
+@media(max-width:900px) { .layout { grid-template-columns:1fr } .hero { grid-template-columns:1fr; gap:16px } main,.nav { padding:20px } .explain { grid-template-columns:1fr } }
+@media(prefers-reduced-motion:no-preference) { button { transition:background .15s,border-color .15s } }
+</style>
+</head>
+<body>
+<header><div class="nav"><div><div class="brand">fursa<span>.</span></div><div class="subbrand">Clean Start Africa</div></div><div class="pill">Synthetic research prototype · Offline</div></div></header>
+<main>
+<section class="hero"><div><div class="eyebrow">Skills first. Human decisions always.</div><h1>A fresh start begins with what you can do.</h1><p class="muted">Explore how practical skills and evidence could connect to opportunity and recognized learning. Built to investigate barriers after incarceration, without collecting someone's history.</p></div><aside class="promise"><strong>Your skills, not your past.</strong><p class="small muted">No criminal history. No protected traits. No employability score. Nothing here makes a hiring decision.</p><span class="small">01 Select skills &nbsp; 02 Explore &nbsp; 03 Human review</span></aside></section>
+<div class="notice"><strong>Everything in this demo is simulated.</strong> Opportunities are fictional, evidence is unverified, and pathways issue no credentials. No employer, assessor or training provider is a partner.</div>
+<div class="layout">
+<aside class="panel">
+<div class="step">01 / BUILD A SKILLS PASSPORT</div><h2>Your starting point</h2><p class="small muted">Try a synthetic profile, or choose catalogued skills. Do not enter personal information.</p>
+<div class="presets" aria-label="Synthetic presets">
+<button data-preset="workshop">Workshop maker</button><button data-preset="energy">Energy learner</button><button data-preset="enterprise">Enterprise helper</button><button data-preset="unmatched">Explore a gap</button>
+</div>
+<form id="form">
+<label for="skills">Skills · exact names, separated by commas</label><textarea id="skills" spellcheck="false" aria-describedby="skill-help"></textarea>
+<div id="skill-help" class="small muted">Use the buttons below. Only catalogued skills are accepted.</div>
+<div id="chips" class="chips" aria-label="Available skills"></div>
+<hr class="divider">
+<h3>Attach simulated evidence</h3><p class="small muted">Tick a fictional work sample to explore evidence gaps. This does not validate skill or change similarity rankings.</p>
+<div id="evidence" class="evidence"></div>
+<div class="passport"><div class="eyebrow">Synthetic passport preview</div><p id="passport" class="small">No skills selected.</p><span class="small muted">Unverified · No identity · Not a credential</span></div>
+<button class="primary" id="submit" type="submit">Explore opportunities</button>
+<div id="status" role="status" aria-live="polite"></div>
+</form>
+<button id="export" type="button">Export synthetic passport</button> <button id="reset" type="button">Reset</button>
+</aside>
+<section aria-label="Discovery results">
+<div class="result-head"><div><div class="step">02 / EXPLORE POSSIBILITIES</div><h2>Skills to opportunity</h2><p class="small muted">Catalog similarity, not suitability. Human review is required for every next step.</p></div></div>
+<div id="results"><div class="empty"><h3>Start with what you know.</h3><p class="muted">Choose a preset or build a synthetic skills passport to see ranked, fictional opportunities.</p></div></div>
+<div class="method"><strong class="small">What is the model actually doing?</strong><p class="small muted">A classical TF-IDF model learns vocabulary and inverse document frequencies from the synthetic skill, opportunity and pathway catalogue. Cosine similarity retrieves overlapping terms. Evidence flags identify missing samples, not eligibility. Similarities are not probabilities.</p><details><summary>Limits &amp; data boundaries</summary><p>Only selected skill names and simulated evidence IDs reach the local backend. No names, offence types, age, gender, nationality, ethnicity, disability or other sensitive attributes are accepted. No data is saved by the server. Your browser holds the current selections until reset or reload.</p><p>These small English-only catalogues are not evidence of fairness, credential recognition, employment outcomes or performance in real communities. Unknown language and uncommon skills can miss opportunities. Ask a human adviser and verify providers independently.</p></details></div>
+</section>
+</div>
+<footer>Fursa | Clean Start Africa · MIT-licensed research prototype · Built for exploration, not deployment in hiring.<br>Local inference only. No API keys, external fonts, analytics or downloaded model weights.</footer>
+</main>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+let catalog = null, selectedEvidence = new Set(), lastResult = null, requestId = 0;
+const presets = {
+  workshop: {skills:["carpentry","welding"], evidence:["e-carpentry"]},
+  energy: {skills:["solar","electrical"], evidence:[]},
+  enterprise: {skills:["bookkeeping","spreadsheets","customer service"], evidence:["e-spreadsheets"]},
+  unmatched: {skills:["astronomy"], evidence:[]}
+};
+function element(tag, text, cls) {
+  const el = document.createElement(tag);
+  if (text !== undefined) el.textContent = text;
+  if (cls) el.className = cls;
+  return el;
+}
+function skillValues() { return $("skills").value.split(",").map(s => s.trim()).filter(Boolean); }
+function setStatus(text, error=false) { $("status").textContent=text; $("status").className=error?"error":""; }
+function invalidate() {
+  requestId++; lastResult=null;
+  $("submit").disabled=false;
+  $("results").replaceChildren(element("div","Selections changed. Explore again to update recommendations.","empty"));
+}
+function refresh() {
+  if (!catalog) return;
+  const skills = skillValues();
+  selectedEvidence = new Set([...selectedEvidence].filter(id => catalog.evidence.some(e => e.id===id && skills.includes(e.skill))));
+  $("chips").replaceChildren();
+  for (const skill of catalog.skills) {
+    const button=element("button",skill,"chip"); button.type="button";
+    button.setAttribute("aria-pressed",String(skills.includes(skill)));
+    button.onclick=() => {
+      const next=skillValues();
+      $("skills").value=(next.includes(skill)?next.filter(s=>s!==skill):[...next,skill]).join(", ");
+      invalidate(); refresh();
+    };
+    $("chips").append(button);
+  }
+  $("evidence").replaceChildren();
+  for (const sample of catalog.evidence.filter(e=>skills.includes(e.skill))) {
+    const label=element("label"), checkbox=element("input");
+    checkbox.type="checkbox"; checkbox.checked=selectedEvidence.has(sample.id);
+    checkbox.onchange=() => {
+      checkbox.checked?selectedEvidence.add(sample.id):selectedEvidence.delete(sample.id);
+      invalidate(); refresh();
+    };
+    label.append(checkbox,element("span",sample.title));
+    $("evidence").append(label);
+  }
+  if (!$("evidence").childNodes.length) $("evidence").append(element("p","No simulated samples available for these selections.","small muted"));
+  $("passport").textContent=`${skills.length} selected skill(s) · ${selectedEvidence.size} simulated sample(s)\n${skills.join(" · ") || "No skills selected."}`;
+}
+function render(result) {
+  const container=$("results"); container.replaceChildren();
+  if (result.no_match) {
+    const empty=element("div",undefined,"empty");
+    empty.append(element("h3","No relevant catalogue match"),element("p","This is a gap in our small fictional catalogue, not a judgement about your skills. A human adviser could help find options beyond this demo.","muted"));
+    container.append(empty);
+  }
+  result.opportunities.forEach((row,index)=>{
+    const card=element("article",undefined,"match");
+    const top=element("div",undefined,"match-top");
+    top.append(element("span",`0${index+1} / FICTIONAL OPPORTUNITY`,"rank"),element("span",`Cosine ${row.similarity.toFixed(3)}`,"score"));
+    card.append(top,element("h3",row.title),element("p",row.setting,"small muted"));
+    const tags=element("div",undefined,"tags");
+    row.skills.forEach(s=>tags.append(element("span",s,"tag"))); card.append(tags);
+    const explanation=element("div",undefined,"explain");
+    const shared=element("div"); shared.append(element("strong","Why it surfaced"),element("p",`Selected skills in common: ${row.shared_skills.join(", ") || "No exact skill overlap; lexical overlap only."}`),element("p",`Shared model terms: ${row.shared_terms.join(", ")}`));
+    const gaps=element("div"); gaps.append(element("strong","Evidence to discuss with a human"),element("p",row.evidence_gaps.length?row.evidence_gaps.join("; "):"Selected simulated samples cover the catalogue list. Nothing has been verified."));
+    if (row.skills_to_explore.length) gaps.append(element("p",`Skills to explore: ${row.skills_to_explore.join(", ")}. These are not an eligibility ruling.`));
+    explanation.append(shared,gaps); card.append(explanation,element("span","Human review required · No application or offer issued","pill")); container.append(card);
+  });
+  if (result.pathways.length) {
+    container.append(element("div","03 / SIMULATED LEARNING PATHWAYS","step"),element("h3","Turn experience into reviewable evidence"),element("p","These are illustrative steps, not accredited courses or credential awards.","small muted"));
+    const pathways=element("div",undefined,"pathways");
+    result.pathways.forEach(row=>{
+      const card=element("article",undefined,"pathway");
+      card.append(element("span","SIMULATED · NOT CERTIFIED","eyebrow"),element("h3",row.title));
+      const details=element("details"), list=element("ol");
+      details.append(element("summary","Explore the review steps"));
+      row.steps.forEach(step=>list.append(element("li",step))); details.append(list);
+      card.append(details,element("p",row.status,"small muted")); pathways.append(card);
+    });
+    container.append(pathways);
+  }
+}
+async function match(event) {
+  if (event) event.preventDefault();
+  if (!catalog) { setStatus("Start the local Python server to use learned model inference.",true); return; }
+  const skills=skillValues();
+  if (!skills.length || new Set(skills).size!==skills.length || skills.some(s=>!catalog.skills.includes(s))) {
+    invalidate(); setStatus("Choose at least one exact catalogued skill, with no duplicates. Do not enter personal details.",true); return;
+  }
+  const id=++requestId; $("submit").disabled=true; setStatus("Running local TF-IDF inference…");
+  try {
+    const response=await fetch("/api/match",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({skills,evidence:[...selectedEvidence]})});
+    const result=await response.json();
+    if (!response.ok) throw new Error(result.error || "Inference failed.");
+    if (id!==requestId) return;
+    lastResult=result; render(result); setStatus("Local inference complete. All results are synthetic.");
+  } catch(error) { if(id===requestId) setStatus(error.message+" Check that the local server is running.",true); }
+  finally { if(id===requestId) $("submit").disabled=false; }
+}
+$("form").onsubmit=match;
+$("skills").oninput=()=>{ invalidate(); refresh(); };
+document.querySelectorAll("[data-preset]").forEach(button=>button.onclick=()=>{
+  const preset=presets[button.dataset.preset]; $("skills").value=preset.skills.join(", ");
+  selectedEvidence=new Set(preset.evidence); invalidate(); refresh(); match();
+});
+$("reset").onclick=()=>{ $("skills").value=""; selectedEvidence.clear(); invalidate(); refresh(); setStatus("Selections cleared. No server data was stored."); };
+$("export").onclick=()=>{
+  if (!lastResult) { setStatus("Explore first to export a validated synthetic passport.",true); return; }
+  const passport={project:"Fursa | Clean Start Africa",synthetic:true,credential_issued:false,human_review_required:true,...lastResult.passport};
+  const url=URL.createObjectURL(new Blob([JSON.stringify(passport,null,2)],{type:"application/json"}));
+  const link=element("a"); link.href=url; link.download="fursa-synthetic-passport.json"; link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  setStatus("Exported simulated selections only. This is not a credential.");
+};
+(async()=>{
+  if(location.protocol==="file:") { setStatus("Open via the local server: python -m fursa serve, then http://127.0.0.1:8765. File preview cannot run Python inference.",true); return; }
+  try {
+    const response=await fetch("/api/catalog"); if(!response.ok) throw new Error("Catalogue unavailable");
+    catalog=await response.json(); refresh(); setStatus("Ready. Choose a synthetic preset or your own catalogue selections.");
+  } catch(error) { setStatus("Cannot reach local backend. Run python -m fursa serve.",true); }
+})();
+</script>
+</body>
+</html>
