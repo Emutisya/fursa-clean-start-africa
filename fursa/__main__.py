@@ -11,7 +11,7 @@ from .model import Matcher
 from .passport import compare_selections, convert_legacy, edit_selections, export_passport, merge_selections, read_passport
 from .reporting import compare_reports, read_report
 from .jsonio import read_json
-from .audit import model_snapshot, verify_snapshot
+from .audit import compare_snapshots, model_snapshot, verify_snapshot
 from .server import make_server
 
 
@@ -46,6 +46,10 @@ def main():
     train.add_argument("--output", default=str(Path("models") / "tfidf.json"))
     verify_model = sub.add_parser("verify-model")
     verify_model.add_argument("path")
+    model_compare = sub.add_parser("compare-models")
+    model_compare.add_argument("before")
+    model_compare.add_argument("after")
+    model_compare.add_argument("--output")
     evaluate_parser = sub.add_parser("evaluate")
     evaluate_parser.add_argument("--output")
     evaluate_parser.add_argument("--kind", choices=["opportunity", "pathway"], default="opportunity")
@@ -172,6 +176,11 @@ def main():
     elif args.command == "verify-model":
         try:
             result = verify_snapshot(read_json(args.path, 1048576))
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
+    elif args.command == "compare-models":
+        try:
+            result = compare_snapshots(read_json(args.before, 1048576), read_json(args.after, 1048576))
         except (ValueError, OSError) as error:
             parser.error(str(error))
     elif args.command == "evaluate":

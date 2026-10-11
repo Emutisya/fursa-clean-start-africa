@@ -181,6 +181,12 @@ catalogue and checks provenance, vocabulary, frequencies and finite IDF weights
 (absolute tolerance 1e-12 for platform math). It never loads file weights for
 inference, authenticates an issuer or accepts personal training documents.
 
+`python -m fursa compare-models models\before.json models\after.json` validates
+synthetic audit shapes and the IDF/frequency formula, then reports vocabulary,
+frequency, document-count, cutoff and provenance differences. Historical
+fingerprints are descriptive and unverified; this does not train/load a model,
+compare people or establish that retrieval improved. Optional `--output` saves it.
+
 For POSIX systems, use `models/tfidf.json` in the training command instead. All other commands are identical.
 
 ## Experience and architecture
