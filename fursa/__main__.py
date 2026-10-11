@@ -4,7 +4,7 @@ import os
 import tempfile
 from pathlib import Path
 
-from .catalog import EVIDENCE, SKILLS
+from .catalog import EVIDENCE, SKILLS, fingerprint
 from .evaluate import baseline_comparison, cutoff_diagnostics, evaluate, evaluation_slices, inspect_case, ranking_curves
 from .discovery import browse, combined_review, compare, detail, preview_additions, related, review_plan, skill_map
 from .model import Matcher
@@ -129,7 +129,8 @@ def main():
             server.server_close()
         return
     if args.command == "catalog":
-        result = {"skills": list(SKILLS), "evidence": EVIDENCE}
+        result = {"skills": list(SKILLS), "evidence": EVIDENCE, "synthetic": True,
+                  "human_review_required": True, "catalog_sha256": fingerprint()}
     elif args.command == "skill-map":
         result = skill_map()
     elif args.command == "inspect":

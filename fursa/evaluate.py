@@ -3,8 +3,8 @@ import hashlib
 import json
 import math
 from collections import Counter
-from .catalog import OPPORTUNITIES, PATHWAYS, corpus, document
-from .model import Tfidf, tokens
+from .catalog import OPPORTUNITIES, PATHWAYS, corpus, document, fingerprint
+from .model import MIN_SIMILARITY, Tfidf, tokens
 
 CASES = [
     ("q01", "timber furniture measuring assembly", {"o-timber"}),
@@ -109,6 +109,10 @@ def evaluate(kind="opportunity"):
         } for identifier in sorted(allowed)
     }
     return {
+        "schema": "fursa.synthetic-evaluation.v1", "synthetic": True, "human_review_required": True,
+        "catalog_sha256": fingerprint(),
+        "settings": {"method": "smoothed-tfidf-logtf-l2", "tokenizer": "lowercase-ascii-alphabetic",
+                     "minimum_similarity": MIN_SIMILARITY, "retrieval_limit": 3, "precision_denominator": 3},
         "resource_kind": kind,
         "fit_documents": model.document_count, "vocabulary_size": len(model.idf),
         "corpus_sha256": model.fingerprint, "held_out_cases": len(rows),

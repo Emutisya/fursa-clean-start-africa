@@ -14,10 +14,22 @@ MAX_REPORT_BYTES = 1048576
 def validate_report(report):
     if not isinstance(report, dict):
         raise ValueError("Evaluation report must be an object.")
+    if (report.get("schema") != "fursa.synthetic-evaluation.v1" or report.get("synthetic") is not True
+            or report.get("human_review_required") is not True):
+        raise ValueError("Use only the explicitly synthetic versioned evaluation report requiring human review.")
+    settings = report.get("settings")
+    expected = {"method": "smoothed-tfidf-logtf-l2", "tokenizer": "lowercase-ascii-alphabetic",
+                "retrieval_limit": 3, "precision_denominator": 3}
+    if (not isinstance(settings, dict) or set(settings) != set(expected) | {"minimum_similarity"}
+            or any(type(settings.get(key)) is not type(value) or settings[key] != value for key, value in expected.items())):
+        raise ValueError("Evaluation settings must describe the supported lexical top-three protocol.")
+    cutoff = settings["minimum_similarity"]
+    if type(cutoff) not in (int, float) or not math.isfinite(cutoff) or not 0 < cutoff <= 1:
+        raise ValueError("Recorded evaluation cutoff must be a finite positive cosine bound.")
     if any(type(report.get(field)) is not int or report[field] < 1
            for field in ("held_out_cases", "positive_cases", "negative_cases", "fit_documents", "vocabulary_size")):
         raise ValueError("Evaluation counts must be positive integers, not booleans.")
-    for field in ("corpus_sha256", "benchmark_sha256"):
+    for field in ("corpus_sha256", "benchmark_sha256", "catalog_sha256"):
         value = report.get(field)
         if not isinstance(value, str) or len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
             raise ValueError("Evaluation reports require SHA-256 corpus and benchmark provenance.")
@@ -140,6 +152,9 @@ def compare_reports(before, after):
     return {
         "synthetic": True, "human_review_required": True,
         "corpus_changed": before["corpus_sha256"] != after["corpus_sha256"],
+        "catalog_changed": before["catalog_sha256"] != after["catalog_sha256"],
+        "settings_changes": {key: {"before": before["settings"][key], "after": after["settings"][key]}
+                             for key in before["settings"] if before["settings"][key] != after["settings"][key]},
         "benchmark_sha256": before["benchmark_sha256"],
         "metric_deltas": {metric: after[metric] - before[metric] for metric in METRICS},
         "changed_rankings": [

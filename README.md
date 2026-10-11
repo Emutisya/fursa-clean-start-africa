@@ -446,6 +446,14 @@ per-resource coverage as well as aggregates and benchmark provenance.
 Comparison uses these same checks. Arithmetic consistency is not authentication
 of labels, independent quality assessment or evidence of social outcomes.
 
+Recorded evaluations now use `fursa.synthetic-evaluation.v1` with explicit
+synthetic/human-review flags, full catalogue fingerprint and tokenizer, method,
+cutoff/depth/precision protocol. Validation rejects missing or changed safety
+context and unsupported protocols; comparisons surface settings/catalogue
+changes. Older unversioned reports require deliberate review/regeneration rather
+than silently assuming their origin. CLI catalogue output also carries safety
+flags and provenance.
+
 `python -m fursa evaluation-curves` reports positive-query recall, precision
 and NDCG for every catalogue depth from 1 through 9 at the unchanged cutoff.
 Precision divides by requested depth even when fewer rows survive. Depth three

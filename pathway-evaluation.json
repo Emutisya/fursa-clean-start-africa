@@ -1,4 +1,15 @@
 {
+  "schema": "fursa.synthetic-evaluation.v1",
+  "synthetic": true,
+  "human_review_required": true,
+  "catalog_sha256": "7996e414ef268b22d6a988f36f4936657b6971bf3b2330f83d52c5a2d6d012b6",
+  "settings": {
+    "method": "smoothed-tfidf-logtf-l2",
+    "tokenizer": "lowercase-ascii-alphabetic",
+    "minimum_similarity": 0.08,
+    "retrieval_limit": 3,
+    "precision_denominator": 3
+  },
   "resource_kind": "pathway",
   "fit_documents": 34,
   "vocabulary_size": 87,

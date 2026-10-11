@@ -7,6 +7,19 @@ from fursa.reporting import compare_reports, validate_report
 
 
 class EvaluationToolsTests(unittest.TestCase):
+    def test_recorded_protocol_requires_synthetic_review_and_surfaces_setting_changes(self):
+        report = evaluate()
+        for field, value in (("synthetic", False), ("human_review_required", 1), ("schema", "real-performance")):
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                validate_report({**report, field: value})
+        changed = deepcopy(report)
+        changed["settings"]["minimum_similarity"] = .16
+        comparison = compare_reports(report, changed)
+        self.assertEqual(comparison["settings_changes"]["minimum_similarity"], {"before": .08, "after": .16})
+        changed["settings"]["retrieval_limit"] = 4
+        with self.assertRaises(ValueError):
+            validate_report(changed)
+
     def test_validation_rejects_per_case_and_coverage_claims_that_aggregate_checks_miss(self):
         report = evaluate()
         self.assertEqual(validate_report(evaluate("pathway"))["resource_kind"], "pathway")
