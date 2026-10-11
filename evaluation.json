@@ -3,6 +3,7 @@
   "vocabulary_size": 87,
   "corpus_sha256": "98a40f4fb83920c3f9eba0444961c33a14b7e6caa4dfddefd3e64936a42139e2",
   "held_out_cases": 14,
+  "benchmark_sha256": "b4b409be2f4c9700d167fb10524dc63b56da57c4f11539016fff775e5b1d7ca4",
   "positive_cases": 12,
   "negative_cases": 2,
   "mean_recall_at_3": 0.8333333333333334,

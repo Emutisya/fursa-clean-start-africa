@@ -1,4 +1,6 @@
 """Held-out, manually labelled synthetic retrieval scenarios, never used to fit."""
+import hashlib
+import json
 from .catalog import OPPORTUNITIES, corpus
 from .model import Tfidf, tokens
 
@@ -52,6 +54,10 @@ def evaluate():
     return {
         "fit_documents": model.document_count, "vocabulary_size": len(model.idf),
         "corpus_sha256": model.fingerprint, "held_out_cases": len(rows),
+        "benchmark_sha256": hashlib.sha256(json.dumps(
+            [(identifier, query, sorted(relevant)) for identifier, query, relevant in CASES],
+            ensure_ascii=True, separators=(",", ":"),
+        ).encode("utf-8")).hexdigest(),
         "positive_cases": len(positive), "negative_cases": len(negative),
         "mean_recall_at_3": sum(row["recall_at_3"] for row in positive) / len(positive),
         "mean_precision_at_3": sum(row["precision_at_3"] for row in positive) / len(positive),

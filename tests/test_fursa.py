@@ -162,6 +162,16 @@ class ModelTests(unittest.TestCase):
             "mean_recall_at_3", "mean_precision_at_3", "mean_reciprocal_rank", "negative_abstention_rate"]))
         self.assertEqual(report["negative_abstention_rate"], 1)
 
+    def test_benchmark_provenance_changes_when_queries_change(self):
+        original = evaluate()
+        changed = [*CASES]
+        identifier, query, relevant = changed[0]
+        changed[0] = (identifier, query + " extra", relevant)
+        with patch("fursa.evaluate.CASES", changed):
+            observed = evaluate()
+        self.assertEqual(observed["corpus_sha256"], original["corpus_sha256"])
+        self.assertNotEqual(observed["benchmark_sha256"], original["benchmark_sha256"])
+
 
 class HttpTests(unittest.TestCase):
     @classmethod
