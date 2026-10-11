@@ -55,3 +55,22 @@ def compare(identifiers):
         },
         "message": "Catalogue similarities only; no preferred option, eligibility or outcome prediction.",
     }
+
+
+def skill_map():
+    return {
+        "synthetic": True, "human_review_required": True,
+        "skills": [
+            {
+                "skill": skill, "terms": SKILLS[skill].split(),
+                "opportunities": sorted(row["id"] for row in OPPORTUNITIES if skill in row["skills"]),
+                "pathways": sorted(row["id"] for row in PATHWAYS if skill in row["skills"]),
+                "evidence": sorted(row["id"] for row in EVIDENCE if row["skill"] == skill),
+                "co_occurring_skills": sorted({
+                    other for row in OPPORTUNITIES if skill in row["skills"]
+                    for other in row["skills"] if other != skill
+                }),
+            } for skill in sorted(SKILLS)
+        ],
+        "message": "Coverage and co-occurrence describe this fictional catalogue, not demand or ability.",
+    }

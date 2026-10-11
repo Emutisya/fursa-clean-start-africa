@@ -127,6 +127,10 @@ are catalogue associations, not mandatory requirements or provider agreements.
 fictional resources, including pathways. It reports common skills and a
 presence matrix without choosing a winner or inferring eligibility.
 
+`python -m fursa skill-map` exposes catalogue coverage for every bounded skill:
+fictional resource IDs, simulated evidence, retrieval terms and skills that
+co-occur in catalogue opportunities. Counts are not labour-market demand.
+
 ```text
 Single-file HTML / Python CLI
           |

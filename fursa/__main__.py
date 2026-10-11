@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .catalog import EVIDENCE, SKILLS
 from .evaluate import evaluate
-from .discovery import browse, compare, detail
+from .discovery import browse, compare, detail, skill_map
 from .model import Matcher
 from .server import make_server
 
@@ -15,6 +15,7 @@ def main():
     parser = argparse.ArgumentParser(description="Fursa | synthetic skill-first discovery")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("catalog")
+    sub.add_parser("skill-map")
     browse_parser = sub.add_parser("browse")
     browse_parser.add_argument("--kind", choices=["opportunity", "pathway"], default="opportunity")
     browse_parser.add_argument("--skills", default="", help="All selected skills must occur in an item")
@@ -53,6 +54,8 @@ def main():
         return
     if args.command == "catalog":
         result = {"skills": list(SKILLS), "evidence": EVIDENCE}
+    elif args.command == "skill-map":
+        result = skill_map()
     elif args.command == "browse":
         try:
             result = browse(args.kind, [s.strip() for s in args.skills.split(",") if s.strip()])

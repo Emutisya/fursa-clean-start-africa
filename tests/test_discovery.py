@@ -1,9 +1,18 @@
 import unittest
 
-from fursa.discovery import browse, compare, detail
+from fursa.discovery import browse, compare, detail, skill_map
 
 
 class DiscoveryTests(unittest.TestCase):
+    def test_skill_map_distinguishes_coverage_gaps_from_co_occurrence(self):
+        skills = {row["skill"]: row for row in skill_map()["skills"]}
+        self.assertEqual(skills["astronomy"]["opportunities"], [])
+        self.assertEqual(skills["astronomy"]["pathways"], [])
+        self.assertEqual(skills["spreadsheets"]["co_occurring_skills"],
+                         ["bookkeeping", "customer service", "logistics"])
+        skills["carpentry"]["terms"].clear()
+        self.assertIn("timber", next(row for row in skill_map()["skills"] if row["skill"] == "carpentry")["terms"])
+
     def test_comparison_is_order_independent_and_does_not_choose_a_winner(self):
         result = compare(["o-accounts", "o-dispatch"])
         self.assertEqual(result, compare(["o-dispatch", "o-accounts"]))
