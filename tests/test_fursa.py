@@ -59,6 +59,15 @@ class ModelTests(unittest.TestCase):
         self.assertAlmostEqual(sum(value * value for value in vector.values()), 1)
         self.assertEqual(model.vector("unseenword"), {})
 
+    def test_ranking_uses_full_precision_before_rounding_display_scores(self):
+        model = Tfidf(["timber"])
+        items = [{"id": "a", "title": "lower", "description": "timber", "skills": []},
+                 {"id": "z", "title": "higher", "description": "timber", "skills": []}]
+        with patch.object(model, "vector", side_effect=[{"timber": 1}, {"timber": .5000001}, {"timber": .5000002}]):
+            ranked = model.rank("timber", items)
+        self.assertEqual([row["id"] for row in ranked], ["z", "a"])
+        self.assertEqual(ranked[0]["similarity"], ranked[1]["similarity"])
+
     def test_invalid_benchmarks_are_rejected_even_with_python_optimization(self):
         for cases in ([], [CASES[0]], [*CASES, CASES[0]], [*CASES, ("unknown", "new query", {"missing"})]):
             with patch("fursa.evaluate.CASES", cases), self.assertRaises(ValueError):

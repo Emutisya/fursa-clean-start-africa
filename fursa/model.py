@@ -47,10 +47,10 @@ class Tfidf:
                              for term, value in query.items() if term in candidate}
             score = sum(contributions.values())
             if score >= MIN_SIMILARITY:
-                scored.append({**item, "similarity": round(score, 6),
+                scored.append((score, {**item, "similarity": round(score, 6),
                                "shared_terms": sorted(contributions,
-                                                      key=lambda term: (-contributions[term], term))[:6]})
-        return sorted(scored, key=lambda row: (-row["similarity"], row["id"]))[:limit]
+                                                      key=lambda term: (-contributions[term], term))[:6]}))
+        return [row for _, row in sorted(scored, key=lambda item: (-item[0], item[1]["id"]))[:limit]]
 
 
 def validate(payload):
