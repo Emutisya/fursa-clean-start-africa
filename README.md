@@ -134,6 +134,12 @@ for a bounded expanded view (1 through 12, default 3). The cutoff and ranking
 remain unchanged; smaller views are prefixes of larger ones. The HTTP input
 schema and published evaluation continue to use the default top three.
 
+`python -m fursa match-batch models\selections.json --output models\results.json`
+accepts a UTF-8 JSON array of one to sixteen ordinary skills/evidence selection
+objects, capped at 32768 bytes. All scenarios validate before inference or
+output. Results retain zero-based input indices; they are simulations, not
+person profiles, and are never aggregated into an ability ranking.
+
 Skill names and evidence IDs must exactly match `catalog`. Empty, duplicate, unknown or sensitive inputs are rejected. Selected evidence must belong to a selected skill. Evidence flags change gap explanations, **never the ranking**.
 
 Training produces inspectable learned IDF weights in an ignored `models` directory. The tiny model is fitted deterministically on startup for CLI and HTTP inference; the persisted file is an audit artifact, not a required runtime dependency. Editing the catalogue intentionally changes its fingerprint and requires regenerating the published evaluation.

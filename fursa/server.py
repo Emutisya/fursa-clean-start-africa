@@ -7,18 +7,10 @@ from urllib.parse import parse_qs, urlsplit
 from .catalog import EVIDENCE, SKILLS
 from .model import Matcher, SelectionError
 from .discovery import browse, compare, detail, skill_map
+from .jsonio import unique_fields
 
 HTML = Path(__file__).resolve().parent.parent / "web" / "index.html"
 MAX_BODY = 4096
-
-
-def unique_fields(pairs):
-    result = {}
-    for key, value in pairs:
-        if key in result:
-            raise ValueError("Duplicate JSON fields are not accepted.")
-        result[key] = value
-    return result
 
 
 def make_server(port=8765):

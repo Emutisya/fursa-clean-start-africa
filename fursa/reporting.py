@@ -3,7 +3,7 @@ import json
 import math
 import hashlib
 
-from .server import unique_fields
+from .jsonio import unique_fields
 
 METRICS = ("mean_recall_at_3", "mean_ndcg_at_3", "mean_precision_at_3",
            "mean_reciprocal_rank", "negative_abstention_rate")

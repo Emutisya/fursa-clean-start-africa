@@ -4,7 +4,7 @@ import json
 
 from .catalog import EVIDENCE, SKILLS, fingerprint
 from .model import Matcher, validate
-from .server import unique_fields
+from .jsonio import unique_fields
 
 SCHEMA = "fursa.synthetic-passport.v1"
 VERIFICATION = "Unverified synthetic selections"

@@ -6,6 +6,21 @@ from fursa.model import Matcher, Tfidf, tokens
 
 
 class InspectionTests(unittest.TestCase):
+    def test_batch_validates_every_scenario_before_any_inference(self):
+        matcher = Matcher()
+        selections = [{"skills": ["solar"]}, {"skills": ["astronomy"]}]
+        result = matcher.batch(selections)
+        self.assertEqual([row["index"] for row in result["results"]], [0, 1])
+        self.assertEqual(result["results"][0]["result"], matcher.match(selections[0]))
+        self.assertTrue(result["results"][1]["result"]["no_match"])
+        with patch.object(matcher, "match") as inference:
+            with self.assertRaises(ValueError):
+                matcher.batch([selections[0], {"skills": ["private"]}])
+            inference.assert_not_called()
+        for selections in ([], [{}] * 17, {"skills": ["solar"]}):
+            with self.assertRaises(ValueError):
+                matcher.batch(selections)
+
     def test_term_inspection_connects_fit_sources_and_document_frequency(self):
         matcher = Matcher()
         result = matcher.inspect_term("timber")

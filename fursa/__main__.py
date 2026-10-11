@@ -10,6 +10,7 @@ from .discovery import browse, compare, detail, preview_additions, related, revi
 from .model import Matcher
 from .passport import compare_selections, edit_selections, export_passport, merge_selections, read_passport
 from .reporting import compare_reports, read_report
+from .jsonio import read_json
 from .server import make_server
 
 
@@ -60,6 +61,9 @@ def main():
     match.add_argument("--skills", required=True, help="Comma-separated exact catalogued skills")
     match.add_argument("--evidence", default="", help="Comma-separated simulated evidence IDs")
     match.add_argument("--limit", type=int, choices=range(1, 13), default=3)
+    batch_parser = sub.add_parser("match-batch")
+    batch_parser.add_argument("path")
+    batch_parser.add_argument("--output")
     passport_parser = sub.add_parser("passport")
     passport_parser.add_argument("--skills", required=True)
     passport_parser.add_argument("--evidence", default="")
@@ -170,6 +174,12 @@ def main():
     elif args.command == "compare-evaluations":
         try:
             result = compare_reports(read_report(args.before), read_report(args.after))
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
+    elif args.command == "match-batch":
+        try:
+            selections = read_json(args.path, 32768)
+            result = Matcher().batch(selections)
         except (ValueError, OSError) as error:
             parser.error(str(error))
     elif args.command == "import-passport":

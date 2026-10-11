@@ -192,6 +192,18 @@ class Matcher:
             "message": "All fictional resource cosines, including rejected results; not suitability or confidence.",
         }
 
+    def batch(self, selections):
+        if not isinstance(selections, list) or not 1 <= len(selections) <= 16:
+            raise ValueError("Batch discovery requires one to sixteen synthetic selection objects.")
+        for selection in selections:
+            validate(selection)
+        return {
+            "synthetic": True, "human_review_required": True,
+            "results": [{"index": index, "result": self.match(selection)}
+                        for index, selection in enumerate(selections)],
+            "message": "Bounded synthetic scenarios, not a batch of personal profiles or comparative ability scores.",
+        }
+
     def match(self, payload, limit=3):
         if type(limit) is not int or not 1 <= limit <= 12:
             raise ValueError("Discovery limit must be an integer from 1 to 12.")
