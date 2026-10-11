@@ -6,6 +6,18 @@ from fursa.model import Matcher, Tfidf, tokens
 
 
 class InspectionTests(unittest.TestCase):
+    def test_term_inspection_connects_fit_sources_and_document_frequency(self):
+        matcher = Matcher()
+        result = matcher.inspect_term("timber")
+        sources = {row["id"]: row for row in result["sources"]}
+        self.assertEqual(len(sources), result["document_frequency"])
+        self.assertGreater(sources["o-timber"]["term_count"], 1)
+        self.assertIn("skill:carpentry", sources)
+        self.assertNotIn("o-metal", sources)
+        for term in ("Timber", "timber metal", "", None, "unknown"):
+            with self.assertRaises(ValueError):
+                matcher.inspect_term(term)
+
     def test_audit_includes_rejected_resources_and_matches_actual_rank_prefix(self):
         matcher = Matcher()
         payload = {"skills": ["spreadsheets"]}

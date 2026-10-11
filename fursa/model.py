@@ -129,6 +129,24 @@ class Matcher:
             "message": "Inspect fitted fictional lexical statistics, not measured human performance.",
         }
 
+    def inspect_term(self, term):
+        if not isinstance(term, str) or term not in self.model.idf:
+            raise ValueError("Use one exact fitted vocabulary term from inspect.")
+        sources = [(row["id"], document(row)) for row in OPPORTUNITIES + PATHWAYS]
+        sources += [("skill:" + skill, text) for skill, text in SKILLS.items()]
+        return {
+            "synthetic": True, "human_review_required": True,
+            "term": term, "idf": self.model.idf[term],
+            "document_frequency": self.model.document_frequencies[term],
+            "sources": [
+                {"id": identifier, "term_count": count,
+                 "normalized_weight": self.model.vector(text)[term]}
+                for identifier, text in sorted(sources)
+                for count in [tokens(text).count(term)] if count
+            ],
+            "message": "Fictional fit-text occurrences and weights, not real-world skill importance.",
+        }
+
     def sensitivity(self, payload):
         skills, _ = validate(payload)
         baseline = self.match(payload)

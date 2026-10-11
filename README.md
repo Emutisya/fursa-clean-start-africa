@@ -118,6 +118,11 @@ causal evidence about a person's abilities.
 fit-document frequencies, plus resource vector sizes/norms and corpus provenance.
 This is model inspection, not a new model or an outcome evaluation.
 
+`python -m fursa inspect-term timber` traces an exact fitted vocabulary term
+to opportunity, pathway and `skill:` fit documents with raw term counts and
+normalized weights. It makes frequency-based IDF inspectable, not a real-world
+measure of how important a skill is.
+
 Every match carries method, fit-corpus and full-catalogue SHA-256 fingerprints,
 the query fingerprint, cutoff, result limit and deterministic tie-break rule.
 The catalogue hash includes simulated evidence and descriptive metadata;

@@ -18,6 +18,8 @@ def main():
     sub.add_parser("catalog")
     sub.add_parser("skill-map")
     sub.add_parser("inspect")
+    term_parser = sub.add_parser("inspect-term")
+    term_parser.add_argument("term")
     browse_parser = sub.add_parser("browse")
     browse_parser.add_argument("--kind", choices=["opportunity", "pathway"], default="opportunity")
     browse_parser.add_argument("--skills", default="", help="All selected skills must occur in an item")
@@ -90,6 +92,11 @@ def main():
         result = skill_map()
     elif args.command == "inspect":
         result = Matcher().inspect()
+    elif args.command == "inspect-term":
+        try:
+            result = Matcher().inspect_term(args.term)
+        except ValueError as error:
+            parser.error(str(error))
     elif args.command == "browse":
         try:
             result = browse(args.kind, [s.strip() for s in args.skills.split(",") if s.strip()])
