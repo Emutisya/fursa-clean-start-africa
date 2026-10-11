@@ -31,6 +31,8 @@ def main():
     review_parser.add_argument("--evidence", default="")
     preview_parser = sub.add_parser("preview-additions")
     preview_parser.add_argument("--skills", required=True)
+    sensitivity_parser = sub.add_parser("sensitivity")
+    sensitivity_parser.add_argument("--skills", required=True)
     compare_parser = sub.add_parser("compare")
     compare_parser.add_argument("ids", nargs="+", help="Two to four distinct fictional IDs")
     train = sub.add_parser("train")
@@ -112,6 +114,11 @@ def main():
     elif args.command == "preview-additions":
         try:
             result = preview_additions({"skills": [s.strip() for s in args.skills.split(",") if s.strip()]})
+        except ValueError as error:
+            parser.error(str(error))
+    elif args.command == "sensitivity":
+        try:
+            result = Matcher().sensitivity({"skills": [s.strip() for s in args.skills.split(",") if s.strip()]})
         except ValueError as error:
             parser.error(str(error))
     elif args.command == "compare":

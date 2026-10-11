@@ -204,6 +204,11 @@ catalogue skill as a hypothetical additional checkbox, reporting changes in
 all surviving opportunity results (limit 12). This helps understand catalogue
 coverage, not decide which skill someone should learn or predict outcomes.
 
+`python -m fursa sensitivity --skills "carpentry,welding"` reports top-three
+leave-one-selection-out results, entered/dropped IDs and set Jaccard overlap.
+A sole removed skill is explicitly marked as an empty hypothetical selection,
+not sent as an invalid passport. This tests lexical dependence, not skill value.
+
 ```text
 Single-file HTML / Python CLI
           |

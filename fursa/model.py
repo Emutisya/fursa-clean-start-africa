@@ -119,6 +119,31 @@ class Matcher:
             "message": "Inspect fitted fictional lexical statistics, not measured human performance.",
         }
 
+    def sensitivity(self, payload):
+        skills, _ = validate(payload)
+        baseline = self.match(payload)
+        old_ids = {row["id"] for row in baseline["opportunities"]}
+        scenarios = []
+        for omitted in skills:
+            remaining = [skill for skill in skills if skill != omitted]
+            query = " ".join(SKILLS[skill] for skill in remaining)
+            rows = self.model.rank(query, OPPORTUNITIES) if remaining else []
+            new_ids = {row["id"] for row in rows}
+            scenarios.append({
+                "omitted_skill": omitted, "remaining_skills": remaining,
+                "empty_selection": not remaining,
+                "ranked": [row["id"] for row in rows],
+                "no_longer_returned": sorted(old_ids - new_ids),
+                "newly_returned": sorted(new_ids - old_ids),
+                "result_set_jaccard": len(old_ids & new_ids) / len(old_ids | new_ids) if old_ids | new_ids else 1,
+            })
+        return {
+            "synthetic": True, "human_review_required": True,
+            "baseline": [row["id"] for row in baseline["opportunities"]],
+            "scenarios": scenarios,
+            "message": "Leave-one-selection-out lexical sensitivity, not causal skill value or ability.",
+        }
+
     def match(self, payload, limit=3):
         if type(limit) is not int or not 1 <= limit <= 12:
             raise ValueError("Discovery limit must be an integer from 1 to 12.")

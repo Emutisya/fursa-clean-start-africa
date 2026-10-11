@@ -6,6 +6,18 @@ from fursa.model import Matcher, Tfidf, tokens
 
 
 class InspectionTests(unittest.TestCase):
+    def test_leave_one_out_sensitivity_exposes_empty_selection_and_resource_dependencies(self):
+        matcher = Matcher()
+        result = matcher.sensitivity({"skills": ["carpentry", "welding"]})
+        rows = {row["omitted_skill"]: row for row in result["scenarios"]}
+        self.assertIn("o-timber", rows["carpentry"]["no_longer_returned"])
+        self.assertIn("o-metal", rows["welding"]["no_longer_returned"])
+        single = matcher.sensitivity({"skills": ["astronomy"]})["scenarios"][0]
+        self.assertTrue(single["empty_selection"])
+        self.assertEqual(single["ranked"], [])
+        self.assertEqual(single["result_set_jaccard"], 1)
+        self.assertEqual(result, matcher.sensitivity({"skills": ["welding", "carpentry"]}))
+
     def test_expanded_discovery_limit_preserves_prefix_and_strict_input_schema(self):
         payload = {"skills": ["bookkeeping", "spreadsheets", "logistics", "solar", "electrical"]}
         matcher = Matcher()
