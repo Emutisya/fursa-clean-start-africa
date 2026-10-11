@@ -271,7 +271,7 @@ HTTP uses 400 for invalid input, 403 for disallowed origin/Host, 413 for an abse
 Selection validation responses distinguish stable `selection_*` error codes
 (object/count/unknown/duplicate/cross-skill evidence) and a `/api/catalog`
 recovery route. Invalid JSON/framing uses `request_invalid_input`. Error text
-never echoes rejected names, biographies or other values; no request is retained. There is no application, credential-issuance, upload or user-account endpoint.
+never echoes rejected names, biographies or other values; no request is retained.
 
 ## Observed synthetic evaluation
 

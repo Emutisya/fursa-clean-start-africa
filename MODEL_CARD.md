@@ -17,6 +17,12 @@ The catalogue has:
 
 The **34 fitting documents** are the opportunity descriptions expanded with their skill descriptions, pathway descriptions expanded with their skill descriptions, and the 13 standalone skill descriptions. Evidence selections, geographic setting labels and human-review flags are not model features. A city is not an input, relevance filter or promise of availability. Titles are displayed, but scoring uses `catalog.document()`, not titles.
 
+Model startup validates catalogue resource shapes, globally unique IDs,
+catalogued skill references, synthetic/human-review flags and explicitly fictional
+opportunity settings. Unknown resource fields, malformed pathway steps and invalid
+evidence links fail before model fitting. This catches accidental catalogue
+corruption; schema checks alone cannot establish the truth of authored text.
+
 ## Learned classical baseline
 
 The stdlib implementation fits an unsupervised TF-IDF retrieval model, learning a vocabulary and per-term weights from the fitting documents:

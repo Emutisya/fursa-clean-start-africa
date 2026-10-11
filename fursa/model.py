@@ -6,7 +6,7 @@ import re
 from copy import deepcopy
 from collections import Counter
 
-from .catalog import EVIDENCE, OPPORTUNITIES, PATHWAYS, SKILLS, corpus, document, fingerprint
+from .catalog import EVIDENCE, OPPORTUNITIES, PATHWAYS, SKILLS, corpus, document, fingerprint, validate_catalog
 
 TOKEN = re.compile(r"[a-z]+")
 MIN_SIMILARITY = 0.08
@@ -116,6 +116,7 @@ def validate(payload):
 
 class Matcher:
     def __init__(self):
+        validate_catalog()
         self.model = Tfidf(corpus())
 
     def inspect(self):

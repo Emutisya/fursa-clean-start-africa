@@ -81,3 +81,47 @@ def fingerprint():
                 "opportunities": OPPORTUNITIES, "pathways": PATHWAYS}
     return hashlib.sha256(json.dumps(snapshot, sort_keys=True, ensure_ascii=True,
                                     separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+def validate_catalog():
+    if (not isinstance(SKILLS, dict) or not SKILLS
+            or any(not isinstance(skill, str) or not skill.strip()
+                   or not isinstance(text, str) or not text.strip() for skill, text in SKILLS.items())):
+        raise ValueError("Catalogue skills require nonempty string names and descriptions.")
+    seen = set()
+    for kind, rows, fields in (
+        ("opportunity", OPPORTUNITIES, {"id", "kind", "title", "skills", "description", "setting", "synthetic", "human_review_required"}),
+        ("pathway", PATHWAYS, {"id", "kind", "title", "skills", "description", "steps", "status", "synthetic", "human_review_required"}),
+        ("evidence", EVIDENCE, {"id", "skill", "title", "description"}),
+    ):
+        if not isinstance(rows, list):
+            raise ValueError("Catalogue resources must be lists.")
+        for row in rows:
+            if not isinstance(row, dict) or set(row) != fields:
+                raise ValueError("Catalogue resources require the bounded synthetic schema, without personal fields.")
+            identifier = row["id"]
+            if not isinstance(identifier, str) or not identifier.strip() or identifier in seen:
+                raise ValueError("Catalogue resource IDs must be unique nonempty strings.")
+            seen.add(identifier)
+            if any(not isinstance(row[field], str) or not row[field].strip() for field in ("title", "description")):
+                raise ValueError("Catalogue resource text must be nonempty.")
+            if kind == "evidence":
+                if not isinstance(row["skill"], str) or row["skill"] not in SKILLS:
+                    raise ValueError("Evidence must reference one catalogued skill.")
+                continue
+            if row["kind"] != kind or row["synthetic"] is not True or row["human_review_required"] is not True:
+                raise ValueError("Resources must remain synthetic and require human review.")
+            skills = row["skills"]
+            if (not isinstance(skills, list) or not skills
+                    or any(not isinstance(skill, str) or skill not in SKILLS for skill in skills)
+                    or len(set(skills)) != len(skills)):
+                raise ValueError("Resources require unique catalogued skill references.")
+            if kind == "pathway":
+                if (not isinstance(row["steps"], list) or not row["steps"]
+                        or any(not isinstance(step, str) or not step.strip() for step in row["steps"])
+                        or not isinstance(row["status"], str) or not row["status"].strip()):
+                    raise ValueError("Pathways require nonempty steps and an explicit simulation status.")
+            elif not isinstance(row["setting"], str) or not row["setting"].startswith("Fictional "):
+                raise ValueError("Opportunity settings must be explicitly fictional.")
+    return {"skills": len(SKILLS), "opportunities": len(OPPORTUNITIES),
+            "pathways": len(PATHWAYS), "evidence": len(EVIDENCE)}

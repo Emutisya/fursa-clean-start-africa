@@ -1,10 +1,25 @@
 import unittest
+from copy import deepcopy
+from unittest.mock import patch
 
-from fursa.catalog import SKILLS
+from fursa.catalog import OPPORTUNITIES, SKILLS, validate_catalog
+from fursa.model import Matcher
 from fursa.discovery import browse, compare, detail, preview_additions, related, review_plan, skill_map
 
 
 class DiscoveryTests(unittest.TestCase):
+    def test_model_startup_rejects_catalogue_safety_and_reference_corruption(self):
+        for field, value in (("synthetic", False), ("skills", ["unlisted"]), ("setting", "Live employer"),
+                             ("name", "personal field"), ("human_review_required", 1)):
+            rows = deepcopy(OPPORTUNITIES)
+            rows[0][field] = value
+            with self.subTest(field=field), patch("fursa.catalog.OPPORTUNITIES", rows), self.assertRaises(ValueError):
+                Matcher()
+        rows = deepcopy(OPPORTUNITIES)
+        rows[1]["id"] = rows[0]["id"]
+        with patch("fursa.catalog.OPPORTUNITIES", rows), self.assertRaisesRegex(ValueError, "unique"):
+            validate_catalog()
+
     def test_addition_preview_uses_only_unselected_catalogue_skills(self):
         result = preview_additions({"skills": ["astronomy"]})
         self.assertEqual(result["baseline_opportunities"], [])
