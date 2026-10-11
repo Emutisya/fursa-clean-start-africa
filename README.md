@@ -334,6 +334,12 @@ deployment superiority. Optional `--output` saves the diagnostic.
 
 The application does not need Node or a browser automation package. If Node 22+ and Edge are already installed, the included CDP smoke test can exercise actual HTTP-backed presets, evidence changes, no-match, validation, reset, responsive layout and themes.
 
+On Windows, `pwsh -File tests\run-browser-smoke.ps1` starts an isolated server
+and installed Edge with OS-assigned ports, checks readiness, runs CDP assertions,
+and stops only its own process tree by PID. Its unique ignored `.browser-check`
+profile/export directory is removed afterward. No packages are installed and
+existing export files are not overwritten. The manual setup below remains usable.
+
 In one PowerShell window, run `python -m fursa serve --port 8769`. In another, from this project directory:
 
 ```powershell

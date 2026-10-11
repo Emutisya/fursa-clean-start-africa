@@ -58,9 +58,15 @@ try {
   await waitFor(`document.getElementById("results").textContent.includes("Solar maintenance") && !document.getElementById("submit").disabled`);
   await evaluate(`document.querySelector('[data-preset="enterprise"]').click()`);
   await waitFor(`document.getElementById("results").textContent.includes("accounts practice") && !document.getElementById("submit").disabled`);
-  const downloadPath=resolve(".browser-check","exports");
+  const downloadPath=process.argv[4] ? resolve(process.argv[4]) : resolve(".browser-check","exports");
   await mkdir(downloadPath,{recursive:true});
   const exportFile=resolve(downloadPath,"fursa-synthetic-passport.json");
+  try {
+    await readFile(exportFile);
+    throw new Error("Refusing to overwrite an existing smoke-test export; choose a fresh artifact directory.");
+  } catch(error) {
+    if(error.code!=="ENOENT") throw error;
+  }
   await send("Browser.setDownloadBehavior",{behavior:"allow",downloadPath});
   await evaluate(`document.getElementById("export").click()`);
   let passport;
