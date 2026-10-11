@@ -2,10 +2,23 @@ import unittest
 import json
 from unittest.mock import patch
 
-from fursa.passport import checksum, compare_selections, export_passport, import_passport, merge_selections
+from fursa.passport import checksum, compare_selections, edit_selections, export_passport, import_passport, merge_selections
 
 
 class PassportTests(unittest.TestCase):
+    def test_edits_remove_attached_simulations_and_reject_ambiguous_intent(self):
+        before = {"skills": ["carpentry"], "evidence": ["e-carpentry"]}
+        result = edit_selections(before, {"remove_skills": ["carpentry"], "add_skills": ["welding"]})
+        self.assertEqual(result["skills"], ["welding"])
+        self.assertEqual(result["evidence"], [])
+        self.assertEqual(before["evidence"], ["e-carpentry"])
+        for changes in ({"remove_skills": ["carpentry"]}, {"add_skills": ["carpentry"]},
+                        {"remove_skills": ["welding"]}, {"name": []},
+                        {"add_evidence": ["e-welding"]}, {"remove_evidence": ["e-welding"]},
+                        {"add_skills": ["welding", "welding"]}):
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                edit_selections(before, changes)
+
     def test_merge_is_canonical_deduplicates_between_sets_and_preserves_unverified_status(self):
         sets = [{"skills": ["solar"], "evidence": ["e-solar"]},
                 {"skills": ["electrical", "solar"]}]

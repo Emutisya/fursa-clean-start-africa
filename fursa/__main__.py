@@ -8,7 +8,7 @@ from .catalog import EVIDENCE, SKILLS
 from .evaluate import evaluate
 from .discovery import browse, compare, detail, related, review_plan, skill_map
 from .model import Matcher
-from .passport import compare_selections, export_passport, merge_selections, read_passport
+from .passport import compare_selections, edit_selections, export_passport, merge_selections, read_passport
 from .server import make_server
 
 
@@ -50,6 +50,11 @@ def main():
     passport_merge = sub.add_parser("merge-passports")
     passport_merge.add_argument("paths", nargs="+")
     passport_merge.add_argument("--output")
+    passport_edit = sub.add_parser("edit-passport")
+    passport_edit.add_argument("path")
+    for field in ("add-skills", "remove-skills", "add-evidence", "remove-evidence"):
+        passport_edit.add_argument("--" + field, default="")
+    passport_edit.add_argument("--output")
     serve = sub.add_parser("serve")
     serve.add_argument("--port", type=int, default=8765)
     args = parser.parse_args()
@@ -127,6 +132,14 @@ def main():
             if not 2 <= len(args.paths) <= 4:
                 raise ValueError("Merge two to four versioned synthetic passport files.")
             result = merge_selections([read_passport(path) for path in args.paths])
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
+    elif args.command == "edit-passport":
+        try:
+            result = edit_selections(read_passport(args.path), {
+                field: [s.strip() for s in getattr(args, field).split(",") if s.strip()]
+                for field in ("add_skills", "remove_skills", "add_evidence", "remove_evidence")
+            })
         except (ValueError, OSError) as error:
             parser.error(str(error))
     else:

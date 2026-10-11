@@ -2,7 +2,7 @@
 import hashlib
 import json
 
-from .catalog import fingerprint
+from .catalog import EVIDENCE, SKILLS, fingerprint
 from .model import Matcher, validate
 from .server import unique_fields
 
@@ -91,3 +91,31 @@ def merge_selections(selections):
         skills.update(selected_skills)
         evidence.update(selected_evidence)
     return export_passport({"skills": sorted(skills), "evidence": sorted(evidence)})
+
+
+def edit_selections(payload, changes):
+    skills, evidence = validate(payload)
+    allowed = {"add_skills": set(SKILLS), "remove_skills": set(SKILLS),
+               "add_evidence": {row["id"] for row in EVIDENCE},
+               "remove_evidence": {row["id"] for row in EVIDENCE}}
+    if not isinstance(changes, dict) or set(changes) - set(allowed):
+        raise ValueError("Only explicit skill/evidence additions and removals are accepted.")
+    for field, choices in allowed.items():
+        values = changes.get(field, [])
+        if (not isinstance(values, list) or any(not isinstance(value, str) or value not in choices for value in values)
+                or len(set(values)) != len(values)):
+            raise ValueError("Edits require unique exact catalogued skill names and simulated evidence IDs.")
+    for add, remove, selected in (
+        ("add_skills", "remove_skills", skills), ("add_evidence", "remove_evidence", evidence),
+    ):
+        additions, removals = set(changes.get(add, [])), set(changes.get(remove, []))
+        if additions & removals or additions & set(selected) or not removals <= set(selected):
+            raise ValueError("Add only unselected items and remove only selected items; edits must not conflict.")
+    updated_skills = (set(skills) - set(changes.get("remove_skills", []))) | set(changes.get("add_skills", []))
+    if any(row["id"] in changes.get("add_evidence", []) and row["skill"] not in updated_skills for row in EVIDENCE):
+        raise ValueError("Added evidence must belong to a skill selected after editing.")
+    updated_evidence = (set(evidence) - set(changes.get("remove_evidence", []))) | set(changes.get("add_evidence", []))
+    stale_evidence = {row["id"] for row in EVIDENCE if row["skill"] in changes.get("remove_skills", [])}
+    return export_passport({
+        "skills": sorted(updated_skills), "evidence": sorted(updated_evidence - stale_evidence),
+    })

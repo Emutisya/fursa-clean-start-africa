@@ -159,6 +159,12 @@ validates two to four envelopes and exports the deduplicated union of their
 bounded selections. No input is rewritten. Merging simulations does not verify
 evidence, transfer qualifications or establish any person's skills.
 
+`python -m fursa edit-passport models\a.json --remove-skills solar --add-skills carpentry --output models\b.json`
+deliberately revises a validated simulation. Removing a skill also removes its
+selected simulated evidence. `--add-evidence` and `--remove-evidence` are optional
+comma-separated IDs. Conflicting, duplicate, already-selected additions,
+unselected removals and an empty final skill set are rejected.
+
 ### Offline catalogue browsing
 
 `python -m fursa browse --kind opportunity --skills "bookkeeping,spreadsheets"`
