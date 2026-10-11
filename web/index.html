@@ -154,7 +154,8 @@ code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text
 <form id="form">
 <label for="skills">Skills · exact names, separated by commas</label><textarea id="skills" spellcheck="false" aria-describedby="skill-help" aria-invalid="false" aria-errormessage="status"></textarea>
 <div id="skill-help" class="small muted">Use the buttons below. Only catalogued skills are accepted.</div>
-<div id="chips" class="chips" aria-label="Available skills"></div>
+<div id="chips" class="chips" role="toolbar" aria-label="Available catalogue skills" aria-describedby="chip-help"></div>
+<p id="chip-help" class="small muted">Keyboard: Left/Right moves between skills; Home/End jumps; Enter/Space toggles a selection.</p>
 <hr class="divider">
 <h3>Attach simulated evidence</h3><p class="small muted">Tick a fictional work sample to explore evidence gaps. This does not validate skill or change similarity rankings.</p>
 <div id="evidence" class="evidence"></div>
@@ -190,6 +191,7 @@ code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text
 const $ = id => document.getElementById(id);
 let catalog = null, selectedEvidence = new Set(), lastResult = null, requestId = 0;
 let pending = null;
+let chipFocus=null;
 let browseId=0, browsePending=null;
 let detailId=0, detailPending=null, detailOpener=null;
 const comparison=new Set(), resourceTitles=new Map();
@@ -353,12 +355,24 @@ function refresh() {
   const focusedSkill = focus.skill;
   const focusedEvidence = focus.evidence;
   const skills = skillValues();
+  const activeSkill=focusedSkill || chipFocus || catalog.skills[0];
   selectedEvidence = new Set([...selectedEvidence].filter(id => catalog.evidence.some(e => e.id===id && skills.includes(e.skill))));
   $("chips").replaceChildren();
   for (const skill of catalog.skills) {
     const button=element("button",skill,"chip"); button.type="button";
     button.dataset.skill=skill;
+    button.tabIndex=skill===activeSkill?0:-1;
     button.setAttribute("aria-pressed",String(skills.includes(skill)));
+    button.onfocus=()=>{
+      chipFocus=skill; $("chips").querySelectorAll("button").forEach(node=>node.tabIndex=node===button?0:-1);
+    };
+    button.onkeydown=event=>{
+      const index=catalog.skills.indexOf(skill), count=catalog.skills.length;
+      const targets={ArrowRight:(index+1)%count,ArrowLeft:(index+count-1)%count,Home:0,End:count-1};
+      if(Object.hasOwn(targets,event.key)) {
+        event.preventDefault(); $("chips").children[targets[event.key]].focus();
+      }
+    };
     button.onclick=() => {
       const next=skillValues();
       $("skills").value=(next.includes(skill)?next.filter(s=>s!==skill):[...next,skill]).join(", ");

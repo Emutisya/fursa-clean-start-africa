@@ -120,6 +120,16 @@ try {
   assert.equal(await evaluate(`document.getElementById("export").disabled`),true);
   assert.equal(await evaluate(`document.getElementById("skills").value`),"solar");
   await evaluate(`window.fetch=window.savedFetch; document.getElementById("reset").click()`);
+  await evaluate(`document.querySelector('[data-skill="carpentry"]').focus()`);
+  await send("Input.dispatchKeyEvent",{type:"keyDown",key:"ArrowRight",code:"ArrowRight",windowsVirtualKeyCode:39});
+  await send("Input.dispatchKeyEvent",{type:"keyUp",key:"ArrowRight",code:"ArrowRight",windowsVirtualKeyCode:39});
+  assert.equal(await evaluate(`document.activeElement.dataset.skill`),"welding");
+  await send("Input.dispatchKeyEvent",{type:"keyDown",key:"Enter",code:"Enter",text:"\r",windowsVirtualKeyCode:13});
+  await send("Input.dispatchKeyEvent",{type:"keyUp",key:"Enter",code:"Enter",windowsVirtualKeyCode:13});
+  assert.equal(await evaluate(`document.getElementById("skills").value`),"welding");
+  assert.equal(await evaluate(`document.activeElement.dataset.skill`),"welding");
+  assert.equal(await evaluate(`[...document.querySelectorAll(".chip")].filter(button=>button.tabIndex===0).length`),1);
+  await evaluate(`document.getElementById("reset").click()`);
   await evaluate(`document.getElementById("browse-panel").open=true; document.getElementById("browse-load").click()`);
   await waitFor(`document.querySelectorAll(".catalog-item").length===9`);
   await evaluate(`document.querySelector('[data-detail="o-accounts"]').click()`);

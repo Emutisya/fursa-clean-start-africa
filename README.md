@@ -124,6 +124,10 @@ with the recovery message and focused for correction before any request is
 sent. Editing or reset clears the invalid state; rejected free text never
 reaches inference.
 
+The catalogue-skill toolbar has one Tab stop with Left/Right wraparound,
+Home/End navigation and native Enter/Space toggles. Selection updates preserve
+the active button's focus and announce `aria-pressed` without thirteen Tab stops.
+
 Pending dashboard inference can be cancelled with its button or Escape.
 Selections are retained, the explore button regains focus and late responses
 cannot restore results or enable export. Cancellation is local; it is not a
