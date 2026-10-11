@@ -119,6 +119,10 @@ ranking or eligibility judgements. Omit `--skills` to browse everything, or use
 `--kind pathway` for simulated review routes. Unknown and duplicate filters are
 rejected. An empty list describes catalogue coverage, not suitability.
 
+`python -m fursa detail o-solar` retrieves a fictional resource by exact ID,
+its simulated evidence options and overlapping review pathways. These links
+are catalogue associations, not mandatory requirements or provider agreements.
+
 ```text
 Single-file HTML / Python CLI
           |

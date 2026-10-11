@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .catalog import EVIDENCE, SKILLS
 from .evaluate import evaluate
-from .discovery import browse
+from .discovery import browse, detail
 from .model import Matcher
 from .server import make_server
 
@@ -18,6 +18,8 @@ def main():
     browse_parser = sub.add_parser("browse")
     browse_parser.add_argument("--kind", choices=["opportunity", "pathway"], default="opportunity")
     browse_parser.add_argument("--skills", default="", help="All selected skills must occur in an item")
+    detail_parser = sub.add_parser("detail")
+    detail_parser.add_argument("id", help="Exact fictional resource ID")
     train = sub.add_parser("train")
     train.add_argument("--output", default=str(Path("models") / "tfidf.json"))
     evaluate_parser = sub.add_parser("evaluate")
@@ -52,6 +54,11 @@ def main():
     elif args.command == "browse":
         try:
             result = browse(args.kind, [s.strip() for s in args.skills.split(",") if s.strip()])
+        except ValueError as error:
+            parser.error(str(error))
+    elif args.command == "detail":
+        try:
+            result = detail(args.id)
         except ValueError as error:
             parser.error(str(error))
     elif args.command == "train":
