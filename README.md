@@ -309,6 +309,12 @@ slice lists case IDs, denominator and applicable means (otherwise `null`).
 These tiny overlapping lexical slices are not demographic, fairness or
 independent-population analyses. Optional `--output` saves the report.
 
+`python -m fursa evaluation-baselines` compares always-abstain, catalogue-ID
+order and unweighted unique-term overlap controls with fitted TF-IDF on the same
+cases, showing each prediction and retrieval/abstention metric. Labels never
+generate control rankings. This is a lexical sanity check, not evidence of
+deployment superiority. Optional `--output` saves the diagnostic.
+
 The application does not need Node or a browser automation package. If Node 22+ and Edge are already installed, the included CDP smoke test can exercise actual HTTP-backed presets, evidence changes, no-match, validation, reset, responsive layout and themes.
 
 In one PowerShell window, run `python -m fursa serve --port 8769`. In another, from this project directory:

@@ -39,7 +39,7 @@ No credential recognition, human assessment or qualification standard is impleme
 
 `fursa.evaluate.CASES` contains **14 held-out query documents** with manually specified relevance sets: 12 positive queries and 2 negative queries. One positive query has two relevant opportunities. Two positive synonym-only challenges use vocabulary missing from the fitting corpus and receive no match.
 
-Only catalogue documents are fitted. Held-out queries and their labels are not used to fit IDF, choose weights or select the threshold. Evaluation checks exact normalized token-sequence disjointness against fitting documents and uniqueness within held-out queries. This prevents exact duplicate leakage, **not all conceptual overlap**: the queries deliberately refer to the same skill domains and mostly use catalogue vocabulary.
+Only catalogue documents are fitted. Held-out queries and their labels are not used to fit IDF, choose weights or select the threshold. Evaluation checks normalized token-count (bag-of-words) disjointness against fitting documents and uniqueness within held-out queries, including reordered duplicates. This prevents exact lexical duplicate leakage, **not all conceptual overlap**: the queries deliberately refer to the same skill domains and mostly use catalogue vocabulary.
 
 The synthetic labels use this rubric: a query about a practical domain is relevant to the opportunity explicitly covering that domain; a query about both timber and metal is relevant to both associated opportunities. Astronomy and unrelated music terms have no relevant opportunities. Labels do not mean an employer would accept a person.
 
@@ -57,6 +57,17 @@ The raw cases, predictions, corpus SHA-256, vocabulary size and document count a
 This set is too small and hand-authored to estimate real deployment quality. Domain labels were authored with knowledge of the catalogue, not by independent annotators. Easy lexical overlap explains strong performance on basic cases; synonym failures demonstrate a known limitation. No train/test subject split is meaningful here because there are no people or personal records. No pathway-relevance benchmark, fairness benchmark, prospective evaluation or real-world impact study was conducted.
 
 ## Privacy and prohibited use
+
+### Additional inspection controls
+
+`evaluation-baselines` compares fitted TF-IDF with always-abstain, catalogue-ID
+order, and unique unweighted query/document term-overlap controls. Every control
+uses the same case labels and top-three precision denominator. Controls do not
+train on labels and are not deployed as alternative matching methods.
+`evaluation-curves`, `evaluation-cutoffs` and `evaluation-slices` describe depth,
+fixed cutoff sensitivity and small lexical slices, respectively. None selects a
+new threshold, calibrates scores, establishes statistical significance or measures
+fairness. Per-query diagnostics expose vocabulary misses and irrelevant results.
 
 Accepted JSON keys are exactly `skills` and `evidence`. Values must belong to fixed allowlists, with duplicate and cross-skill evidence checks. Sensitive fields, biography text and unknown skill values are rejected.
 

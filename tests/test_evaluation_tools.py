@@ -2,11 +2,22 @@ import unittest
 from copy import deepcopy
 from unittest.mock import patch
 
-from fursa.evaluate import cutoff_diagnostics, evaluate, evaluation_slices, ranking_curves
+from fursa.evaluate import baseline_comparison, cutoff_diagnostics, evaluate, evaluation_slices, ranking_curves
 from fursa.reporting import compare_reports
 
 
 class EvaluationToolsTests(unittest.TestCase):
+    def test_simple_baselines_preserve_negative_controls_and_reproduce_tfidf_metrics(self):
+        report = evaluate()
+        controls = baseline_comparison()["controls"]
+        self.assertEqual(controls["always_abstain"]["mean_recall_at_3"], 0)
+        self.assertEqual(controls["always_abstain"]["negative_abstention_rate"], 1)
+        self.assertEqual(controls["catalogue_id_order"]["negative_abstention_rate"], 0)
+        self.assertEqual(controls["unweighted_term_overlap"]["predictions"]["q01"][0], "o-timber")
+        self.assertEqual(controls["unweighted_term_overlap"]["predictions"]["q13"], [])
+        for key in ("mean_recall_at_3", "mean_precision_at_3", "mean_reciprocal_rank", "negative_abstention_rate"):
+            self.assertAlmostEqual(controls["fitted_tfidf"][key], report[key])
+
     def test_slices_expose_denominators_and_partition_lexical_failures(self):
         report = evaluate()
         slices = evaluation_slices()["slices"]

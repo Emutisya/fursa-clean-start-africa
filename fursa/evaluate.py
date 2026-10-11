@@ -3,7 +3,7 @@ import hashlib
 import json
 import math
 from collections import Counter
-from .catalog import OPPORTUNITIES, corpus
+from .catalog import OPPORTUNITIES, corpus, document
 from .model import Tfidf, tokens
 
 CASES = [
@@ -189,4 +189,43 @@ def evaluation_slices():
         "corpus_sha256": report["corpus_sha256"], "benchmark_sha256": report["benchmark_sha256"],
         "slices": slices,
         "message": "Small overlapping lexical/relevance slices, not demographic groups, fairness evidence or independent samples.",
+    }
+
+
+def baseline_comparison():
+    report = evaluate()
+    documents = [(row["id"], set(tokens(document(row)))) for row in OPPORTUNITIES]
+    controls = {"always_abstain": {}, "catalogue_id_order": {}, "unweighted_term_overlap": {},
+                "fitted_tfidf": {row["id"]: row["ranked"] for row in report["cases"]}}
+    for identifier, query, _ in CASES:
+        controls["always_abstain"][identifier] = []
+        controls["catalogue_id_order"][identifier] = sorted(row["id"] for row in OPPORTUNITIES)[:3]
+        scores = [(len(set(tokens(query)) & terms), resource) for resource, terms in documents]
+        controls["unweighted_term_overlap"][identifier] = [
+            resource for count, resource in sorted(scores, key=lambda row: (-row[0], row[1])) if count
+        ][:3]
+    summaries = {}
+    for name, predictions in controls.items():
+        recalls, precisions, reciprocals, abstentions = [], [], [], []
+        for identifier, _, relevant in CASES:
+            ranked = predictions[identifier]
+            if relevant:
+                hits = len(set(ranked) & relevant)
+                recalls.append(hits / len(relevant))
+                precisions.append(hits / 3)
+                reciprocals.append(next((1 / (i + 1) for i, item in enumerate(ranked) if item in relevant), 0))
+            else:
+                abstentions.append(not ranked)
+        summaries[name] = {
+            "mean_recall_at_3": sum(recalls) / len(recalls),
+            "mean_precision_at_3": sum(precisions) / len(precisions),
+            "mean_reciprocal_rank": sum(reciprocals) / len(reciprocals),
+            "negative_abstention_rate": sum(abstentions) / len(abstentions),
+            "predictions": predictions,
+        }
+    return {
+        "synthetic": True, "human_review_required": True,
+        "corpus_sha256": report["corpus_sha256"], "benchmark_sha256": report["benchmark_sha256"],
+        "controls": summaries,
+        "message": "Simple synthetic lexical controls, not independently validated alternatives or outcome comparisons.",
     }
