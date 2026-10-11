@@ -164,3 +164,29 @@ def cutoff_diagnostics():
         "sweeps": sweeps,
         "message": "Fixed synthetic cutoff sensitivity only. No cutoff is selected or calibrated; production defaults are unchanged.",
     }
+
+
+def evaluation_slices():
+    report = evaluate()
+    predicates = {
+        "positive_known_vector": lambda row: bool(row["relevant"]) and row["diagnostics"]["has_vector"],
+        "positive_empty_vector": lambda row: bool(row["relevant"]) and not row["diagnostics"]["has_vector"],
+        "negative_known_vector": lambda row: not row["relevant"] and row["diagnostics"]["has_vector"],
+        "negative_empty_vector": lambda row: not row["relevant"] and not row["diagnostics"]["has_vector"],
+        "positive_single_relevant": lambda row: len(row["relevant"]) == 1,
+        "positive_multiple_relevant": lambda row: len(row["relevant"]) > 1,
+    }
+    slices = {}
+    for name, predicate in predicates.items():
+        rows = [row for row in report["cases"] if predicate(row)]
+        summary = {"case_ids": [row["id"] for row in rows], "case_count": len(rows)}
+        for metric in ("recall_at_3", "precision_at_3", "ndcg_at_3", "reciprocal_rank", "correct_abstention"):
+            values = [row[metric] for row in rows if row[metric] is not None]
+            summary["mean_" + metric] = sum(values) / len(values) if values else None
+        slices[name] = summary
+    return {
+        "synthetic": True, "human_review_required": True,
+        "corpus_sha256": report["corpus_sha256"], "benchmark_sha256": report["benchmark_sha256"],
+        "slices": slices,
+        "message": "Small overlapping lexical/relevance slices, not demographic groups, fairness evidence or independent samples.",
+    }

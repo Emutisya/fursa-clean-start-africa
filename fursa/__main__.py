@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 
 from .catalog import EVIDENCE, SKILLS
-from .evaluate import cutoff_diagnostics, evaluate, ranking_curves
+from .evaluate import cutoff_diagnostics, evaluate, evaluation_slices, ranking_curves
 from .discovery import browse, compare, detail, preview_additions, related, review_plan, skill_map
 from .model import Matcher
 from .passport import compare_selections, edit_selections, export_passport, merge_selections, read_passport
@@ -48,6 +48,8 @@ def main():
     curves_parser.add_argument("--output")
     cutoffs_parser = sub.add_parser("evaluation-cutoffs")
     cutoffs_parser.add_argument("--output")
+    slices_parser = sub.add_parser("evaluation-slices")
+    slices_parser.add_argument("--output")
     evaluation_compare = sub.add_parser("compare-evaluations")
     evaluation_compare.add_argument("before")
     evaluation_compare.add_argument("after")
@@ -159,6 +161,8 @@ def main():
         result = ranking_curves()
     elif args.command == "evaluation-cutoffs":
         result = cutoff_diagnostics()
+    elif args.command == "evaluation-slices":
+        result = evaluation_slices()
     elif args.command == "compare-evaluations":
         try:
             result = compare_reports(read_report(args.before), read_report(args.after))

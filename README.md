@@ -303,6 +303,12 @@ precision and negative abstention, reproducing the default at 0.08. It does not
 choose a cutoff, tune the model or establish calibration. Optional `--output`
 saves the diagnostic separately; match and published evaluation stay unchanged.
 
+`python -m fursa evaluation-slices` separates positive/negative queries with
+known versus empty vectors and single versus multiple relevance labels. Every
+slice lists case IDs, denominator and applicable means (otherwise `null`).
+These tiny overlapping lexical slices are not demographic, fairness or
+independent-population analyses. Optional `--output` saves the report.
+
 The application does not need Node or a browser automation package. If Node 22+ and Edge are already installed, the included CDP smoke test can exercise actual HTTP-backed presets, evidence changes, no-match, validation, reset, responsive layout and themes.
 
 In one PowerShell window, run `python -m fursa serve --port 8769`. In another, from this project directory:

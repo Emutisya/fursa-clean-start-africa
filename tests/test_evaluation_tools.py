@@ -2,11 +2,24 @@ import unittest
 from copy import deepcopy
 from unittest.mock import patch
 
-from fursa.evaluate import cutoff_diagnostics, evaluate, ranking_curves
+from fursa.evaluate import cutoff_diagnostics, evaluate, evaluation_slices, ranking_curves
 from fursa.reporting import compare_reports
 
 
 class EvaluationToolsTests(unittest.TestCase):
+    def test_slices_expose_denominators_and_partition_lexical_failures(self):
+        report = evaluate()
+        slices = evaluation_slices()["slices"]
+        known, unknown = slices["positive_known_vector"], slices["positive_empty_vector"]
+        self.assertEqual(unknown["case_ids"], ["q13", "q14"])
+        self.assertEqual(unknown["mean_recall_at_3"], 0)
+        self.assertIsNone(unknown["mean_correct_abstention"])
+        total = known["case_count"] + unknown["case_count"]
+        self.assertEqual(total, report["positive_cases"])
+        weighted = sum(row["case_count"] * row["mean_recall_at_3"] for row in (known, unknown)) / total
+        self.assertAlmostEqual(weighted, report["mean_recall_at_3"])
+        self.assertEqual(slices["positive_multiple_relevant"]["case_ids"], ["q10"])
+
     def test_cutoff_sweep_reproduces_default_and_uses_full_ranking_cutoff(self):
         report = evaluate()
         sweeps = cutoff_diagnostics()["sweeps"]
