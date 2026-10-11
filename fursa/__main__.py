@@ -9,6 +9,7 @@ from .evaluate import evaluate
 from .discovery import browse, compare, detail, preview_additions, related, review_plan, skill_map
 from .model import Matcher
 from .passport import compare_selections, edit_selections, export_passport, merge_selections, read_passport
+from .reporting import compare_reports, read_report
 from .server import make_server
 
 
@@ -43,6 +44,10 @@ def main():
     train.add_argument("--output", default=str(Path("models") / "tfidf.json"))
     evaluate_parser = sub.add_parser("evaluate")
     evaluate_parser.add_argument("--output")
+    evaluation_compare = sub.add_parser("compare-evaluations")
+    evaluation_compare.add_argument("before")
+    evaluation_compare.add_argument("after")
+    evaluation_compare.add_argument("--output")
     match = sub.add_parser("match")
     match.add_argument("--skills", required=True, help="Comma-separated exact catalogued skills")
     match.add_argument("--evidence", default="", help="Comma-separated simulated evidence IDs")
@@ -146,6 +151,11 @@ def main():
                   "corpus_sha256": model.fingerprint, "idf": model.idf}
     elif args.command == "evaluate":
         result = evaluate()
+    elif args.command == "compare-evaluations":
+        try:
+            result = compare_reports(read_report(args.before), read_report(args.after))
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
     elif args.command == "import-passport":
         try:
             result = Matcher().match(read_passport(args.path))

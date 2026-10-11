@@ -283,6 +283,14 @@ and extra retrieved IDs, returned similarities/shared terms, and an explicit
 outcome category. A lexical vocabulary miss differs from a known-vector
 abstention. Categories describe synthetic relevance labels, not user outcomes.
 
+`python -m fursa compare-evaluations evaluation.json evaluation.json` compares
+recorded metrics and changed rankings only after checking finite bounded
+metrics, unique top-three cases and matching benchmark/query/relevance
+provenance. Aggregate metrics are independently recomputed from rankings.
+Inputs are limited to one MiB of strict UTF-8 JSON. Corpus changes
+are flagged rather than hidden. Deltas are not statistical significance or
+evidence of real-user improvement; optional `--output` saves the comparison.
+
 The application does not need Node or a browser automation package. If Node 22+ and Edge are already installed, the included CDP smoke test can exercise actual HTTP-backed presets, evidence changes, no-match, validation, reset, responsive layout and themes.
 
 In one PowerShell window, run `python -m fursa serve --port 8769`. In another, from this project directory:
