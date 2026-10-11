@@ -101,6 +101,21 @@ try {
   await evaluate(`document.getElementById("reset").click()`);
   assert.equal(await evaluate(`document.getElementById("skills").value`),"");
   assert.equal(await evaluate(`document.getElementById("skills").getAttribute("aria-invalid")`),"false");
+  await evaluate(`window.savedFetch=window.fetch; window.fetch=(url,options)=>{
+    if(url!=="/api/match") return window.savedFetch(url,options);
+    return new Promise(resolve=>{window.finishDelayed=()=>window.savedFetch(url,{...options,signal:undefined}).then(resolve);});
+  }; document.getElementById("skills").value="solar"; document.getElementById("form").requestSubmit();`);
+  assert.equal(await evaluate(`document.getElementById("results").getAttribute("aria-busy")`),"true");
+  assert.equal(await evaluate(`document.getElementById("cancel").hidden`),false);
+  await send("Input.dispatchKeyEvent",{type:"keyDown",key:"Escape",code:"Escape",windowsVirtualKeyCode:27});
+  await send("Input.dispatchKeyEvent",{type:"keyUp",key:"Escape",code:"Escape",windowsVirtualKeyCode:27});
+  await waitFor(`document.getElementById("status").textContent.includes("Inference cancelled")`);
+  assert.equal(await evaluate(`document.activeElement.id`),"submit");
+  await evaluate(`window.finishDelayed().then(()=>new Promise(resolve=>setTimeout(resolve,100)))`);
+  assert.equal(await evaluate(`document.querySelectorAll(".match").length`),0);
+  assert.equal(await evaluate(`document.getElementById("export").disabled`),true);
+  assert.equal(await evaluate(`document.getElementById("skills").value`),"solar");
+  await evaluate(`window.fetch=window.savedFetch; document.getElementById("reset").click()`);
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   assert.equal(await evaluate(`document.documentElement.scrollWidth<=window.innerWidth`),true);
   await evaluate(`document.documentElement.dataset.theme="dark"`);

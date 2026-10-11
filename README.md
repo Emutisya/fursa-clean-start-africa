@@ -124,6 +124,11 @@ with the recovery message and focused for correction before any request is
 sent. Editing or reset clears the invalid state; rejected free text never
 reaches inference.
 
+Pending dashboard inference can be cancelled with its button or Escape.
+Selections are retained, the explore button regains focus and late responses
+cannot restore results or enable export. Cancellation is local; it is not a
+claim that an already-received loopback request was erased from memory.
+
 `python -m fursa inspect` prints reproducible fitted vocabulary, IDF and actual
 fit-document frequencies, plus resource vector sizes/norms and corpus provenance.
 This is model inspection, not a new model or an outcome evaluation.

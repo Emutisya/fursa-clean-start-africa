@@ -155,6 +155,7 @@ code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text
 <div id="evidence" class="evidence"></div>
 <div class="passport"><div class="eyebrow">Synthetic passport preview</div><p id="passport" class="small">No skills selected.</p><span class="small muted">Unverified · No identity · Not a credential</span></div>
 <button class="primary" id="submit" type="submit">Explore opportunities</button>
+<button id="cancel" type="button" hidden>Cancel inference</button>
 <div id="status" role="status" aria-live="polite"></div>
 </form>
 <button id="export" type="button" disabled>Export synthetic passport</button> <button id="reset" type="button">Reset</button>
@@ -193,6 +194,7 @@ function invalidate() {
   $("export").disabled=true;
   $("results").setAttribute("aria-busy","false");
   $("submit").disabled=false;
+  $("cancel").hidden=true;
   $("skills").setAttribute("aria-invalid","false");
   $("results").replaceChildren(element("div","Selections changed. Explore again to update recommendations.","empty"));
 }
@@ -299,6 +301,7 @@ async function match(event) {
   }
   invalidate();
   const id=++requestId; $("submit").disabled=true; setStatus("Running local TF-IDF inference…");
+  $("cancel").hidden=false;
   $("results").setAttribute("aria-busy","true");
   try {
     pending=new AbortController();
@@ -308,9 +311,17 @@ async function match(event) {
     if (id!==requestId) return;
     lastResult=result; $("export").disabled=false; render(result); setStatus("Local inference complete. All results are synthetic.");
   } catch(error) { if(id===requestId) setStatus((error.name==="TimeoutError"?"The local inference request timed out.":error.message)+" Check that the local server is running.",true); }
-  finally { if(id===requestId) { $("submit").disabled=false; pending=null; $("results").setAttribute("aria-busy","false"); } }
+  finally { if(id===requestId) { $("submit").disabled=false; $("cancel").hidden=true; pending=null; $("results").setAttribute("aria-busy","false"); } }
 }
 $("form").onsubmit=match;
+$("cancel").onclick=()=>{
+  if(!pending) return;
+  invalidate(); setStatus("Inference cancelled. Selections kept; explore again when ready.");
+  $("submit").focus();
+};
+document.addEventListener("keydown",event=>{
+  if(event.key==="Escape" && pending) { event.preventDefault(); $("cancel").click(); }
+});
 $("skills").oninput=()=>{ invalidate(); refresh(); };
 document.querySelectorAll("[data-preset]").forEach(button=>button.onclick=()=>{
   const preset=presets[button.dataset.preset]; $("skills").value=preset.skills.join(", ");
