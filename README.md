@@ -8,7 +8,6 @@ assessment pathways, and makes missing evidence visible so a human can help
 plan the next step.
 
 [![CI](https://github.com/Emutisya/fursa-clean-start-africa/actions/workflows/ci.yml/badge.svg)](https://github.com/Emutisya/fursa-clean-start-africa/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## The invention thesis
 
@@ -210,7 +209,7 @@ Close the dedicated browser process and server afterward, and remove the ignored
 ## Contributing and publication
 
 Published at [Emutisya/fursa-clean-start-africa](https://github.com/Emutisya/fursa-clean-start-africa).
-The repository includes an MIT license and GitHub Actions running tests,
+The repository includes GitHub Actions running tests,
 training, reproducible metric comparison and CLI inference on Windows/Linux
 with Python 3.11/3.13. CI uses platform-provided checkout/setup actions; the
 application itself has no network dependencies.
@@ -218,5 +217,3 @@ application itself has no network dependencies.
 Keep additions fictional until a consented, reviewed research protocol exists.
 Add focused tests for behavior changes and update the model card and recorded
 evaluation. Do not add personal biographies or sensitive labels to training data.
-
-**License:** [MIT](LICENSE).
