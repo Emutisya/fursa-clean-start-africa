@@ -44,6 +44,9 @@ def main():
     sensitivity_parser.add_argument("--skills", required=True)
     audit_parser = sub.add_parser("audit-ranking")
     audit_parser.add_argument("--skills", required=True)
+    evidence_audit_parser = sub.add_parser("evidence-audit")
+    evidence_audit_parser.add_argument("--skills", required=True)
+    evidence_audit_parser.add_argument("--evidence", default="")
     compare_parser = sub.add_parser("compare")
     compare_parser.add_argument("ids", nargs="+", help="Two to four distinct fictional IDs")
     train = sub.add_parser("train")
@@ -176,6 +179,14 @@ def main():
     elif args.command == "audit-ranking":
         try:
             result = Matcher().audit({"skills": [s.strip() for s in args.skills.split(",") if s.strip()]})
+        except ValueError as error:
+            parser.error(str(error))
+    elif args.command == "evidence-audit":
+        try:
+            result = Matcher().evidence_audit({
+                "skills": [s.strip() for s in args.skills.split(",") if s.strip()],
+                "evidence": [s.strip() for s in args.evidence.split(",") if s.strip()],
+            })
         except ValueError as error:
             parser.error(str(error))
     elif args.command == "compare":

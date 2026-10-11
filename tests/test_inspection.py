@@ -1,4 +1,5 @@
 import unittest
+from copy import deepcopy
 from unittest.mock import patch
 
 from fursa.catalog import EVIDENCE, corpus, fingerprint
@@ -6,6 +7,24 @@ from fursa.model import Matcher, Tfidf, tokens
 
 
 class InspectionTests(unittest.TestCase):
+    def test_evidence_audit_observes_gap_changes_without_affecting_either_ranking(self):
+        matcher = Matcher()
+        payload = {"skills": ["carpentry", "welding"], "evidence": ["e-carpentry"]}
+        report = matcher.evidence_audit(payload)
+        self.assertTrue(report["all_rankings_unchanged"])
+        rows = {row["sample"]: row for row in report["scenarios"]}
+        self.assertFalse(rows["e-carpentry"]["selected_after"])
+        self.assertTrue(rows["e-welding"]["selected_after"])
+        self.assertEqual(rows["e-carpentry"]["gap_changes"][0]["after"], ["Synthetic carpentry work sample"])
+        self.assertEqual(rows["e-welding"]["gap_changes"][0]["after"], [])
+        self.assertEqual(payload["evidence"], ["e-carpentry"])
+        self.assertEqual(matcher.evidence_audit({"skills": ["astronomy"]})["scenarios"], [])
+        baseline = matcher.match({"skills": ["carpentry"]})
+        changed = deepcopy(baseline)
+        changed["opportunities"][0]["similarity"] = 0
+        with patch.object(matcher, "match", side_effect=[baseline, changed]):
+            self.assertFalse(matcher.evidence_audit({"skills": ["carpentry"]})["all_rankings_unchanged"])
+
     def test_batch_validates_every_scenario_before_any_inference(self):
         matcher = Matcher()
         selections = [{"skills": ["solar"]}, {"skills": ["astronomy"]}]

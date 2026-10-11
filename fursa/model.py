@@ -204,6 +204,37 @@ class Matcher:
             "message": "Bounded synthetic scenarios, not a batch of personal profiles or comparative ability scores.",
         }
 
+    def evidence_audit(self, payload):
+        skills, evidence = validate(payload)
+        baseline = self.match(payload)
+        signature = lambda result: {
+            kind: [(row["id"], row["similarity"], row["term_contributions"]) for row in result[kind]]
+            for kind in ("opportunities", "pathways")
+        }
+        scenarios = []
+        for sample in EVIDENCE:
+            if sample["skill"] not in skills:
+                continue
+            toggled = sorted(set(evidence) ^ {sample["id"]})
+            changed = self.match({"skills": skills, "evidence": toggled})
+            before = {row["id"]: row["evidence_gaps"] for row in baseline["opportunities"]}
+            after = {row["id"]: row["evidence_gaps"] for row in changed["opportunities"]}
+            scenarios.append({
+                "sample": sample["id"], "selected_before": sample["id"] in evidence,
+                "selected_after": sample["id"] in toggled,
+                "ranking_unchanged": signature(baseline) == signature(changed),
+                "gap_changes": [
+                    {"resource": identifier, "before": before[identifier], "after": after.get(identifier)}
+                    for identifier in sorted(before) if before[identifier] != after.get(identifier)
+                ],
+            })
+        return {
+            "synthetic": True, "human_review_required": True,
+            "all_rankings_unchanged": all(row["ranking_unchanged"] for row in scenarios),
+            "scenarios": scenarios,
+            "message": "Synthetic evidence-toggle invariance audit. Gap changes never verify evidence or competence.",
+        }
+
     def match(self, payload, limit=3):
         from .passport import export_passport
 

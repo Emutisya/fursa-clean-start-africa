@@ -301,6 +301,12 @@ opportunity/pathway cosine, whether it passes the fixed cutoff, and its signed
 distance from that cutoff. Unlike discovery, zero/below-cutoff rows are retained
 for inspection only. Margins are not confidence or suitability estimates.
 
+`python -m fursa evidence-audit --skills "carpentry,welding" --evidence e-carpentry`
+toggles every available selected-skill sample in a separate simulation, compares
+both resource rankings/scores/contributions and lists gap-explanation changes.
+The invariant is observed rather than assumed. No sample becomes verified;
+an unsupported skill with no samples produces an empty scenario list.
+
 ```text
 Single-file HTML / Python CLI
           |
