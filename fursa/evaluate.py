@@ -132,3 +132,35 @@ def ranking_curves():
         "positive_cases": len(positive), "curves": curves,
         "message": "Synthetic positive-query depth diagnostics at the unchanged cutoff, not outcome estimates.",
     }
+
+
+def cutoff_diagnostics():
+    baseline = evaluate()
+    model = Tfidf(corpus())
+    audits = [(identifier, relevant, model.audit(query, OPPORTUNITIES)) for identifier, query, relevant in CASES]
+    sweeps = []
+    for cutoff in (0.01, 0.04, 0.08, 0.16, 0.32, 0.64, 1.0):
+        rows = []
+        for identifier, relevant, scores in audits:
+            ranked = [row["id"] for row in scores if row["cosine"] >= cutoff][:3]
+            rows.append({
+                "id": identifier, "ranked": ranked,
+                "recall": len(set(ranked) & relevant) / len(relevant) if relevant else None,
+                "precision": len(set(ranked) & relevant) / 3 if relevant else None,
+                "correct_abstention": not ranked if not relevant else None,
+            })
+        positive = [row for row in rows if row["recall"] is not None]
+        negative = [row for row in rows if row["correct_abstention"] is not None]
+        sweeps.append({
+            "cutoff": cutoff,
+            "mean_recall_at_3": sum(row["recall"] for row in positive) / len(positive),
+            "mean_precision_at_3": sum(row["precision"] for row in positive) / len(positive),
+            "negative_abstention_rate": sum(row["correct_abstention"] for row in negative) / len(negative),
+            "cases": rows,
+        })
+    return {
+        "synthetic": True, "human_review_required": True,
+        "corpus_sha256": baseline["corpus_sha256"], "benchmark_sha256": baseline["benchmark_sha256"],
+        "sweeps": sweeps,
+        "message": "Fixed synthetic cutoff sensitivity only. No cutoff is selected or calibrated; production defaults are unchanged.",
+    }

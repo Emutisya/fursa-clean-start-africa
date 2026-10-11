@@ -297,6 +297,12 @@ Precision divides by requested depth even when fewer rows survive. Depth three
 reproduces published metrics; deeper views do not repair missing vocabulary.
 Use `--output models\curves.json` to save this separate diagnostic artifact.
 
+`python -m fursa evaluation-cutoffs` inspects seven fixed lexical cutoffs using
+full-precision scores and the same synthetic cases. It reports rankings, recall,
+precision and negative abstention, reproducing the default at 0.08. It does not
+choose a cutoff, tune the model or establish calibration. Optional `--output`
+saves the diagnostic separately; match and published evaluation stay unchanged.
+
 The application does not need Node or a browser automation package. If Node 22+ and Edge are already installed, the included CDP smoke test can exercise actual HTTP-backed presets, evidence changes, no-match, validation, reset, responsive layout and themes.
 
 In one PowerShell window, run `python -m fursa serve --port 8769`. In another, from this project directory:

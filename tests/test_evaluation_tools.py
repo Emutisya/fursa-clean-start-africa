@@ -2,11 +2,22 @@ import unittest
 from copy import deepcopy
 from unittest.mock import patch
 
-from fursa.evaluate import evaluate, ranking_curves
+from fursa.evaluate import cutoff_diagnostics, evaluate, ranking_curves
 from fursa.reporting import compare_reports
 
 
 class EvaluationToolsTests(unittest.TestCase):
+    def test_cutoff_sweep_reproduces_default_and_uses_full_ranking_cutoff(self):
+        report = evaluate()
+        sweeps = cutoff_diagnostics()["sweeps"]
+        default = next(row for row in sweeps if row["cutoff"] == .08)
+        self.assertEqual([row["ranked"] for row in default["cases"]], [row["ranked"] for row in report["cases"]])
+        self.assertAlmostEqual(default["mean_recall_at_3"], report["mean_recall_at_3"])
+        self.assertAlmostEqual(default["negative_abstention_rate"], report["negative_abstention_rate"])
+        counts = [sum(len(case["ranked"]) for case in row["cases"]) for row in sweeps]
+        self.assertEqual(counts, sorted(counts, reverse=True))
+        self.assertLess(sweeps[-1]["mean_recall_at_3"], default["mean_recall_at_3"])
+
     def test_depth_curves_reproduce_top_three_and_do_not_hide_fixed_cutoff_misses(self):
         report = evaluate()
         rows = ranking_curves()["curves"]
