@@ -11,6 +11,7 @@ from .model import Matcher
 from .passport import compare_selections, convert_legacy, edit_selections, export_passport, merge_selections, read_passport
 from .reporting import compare_reports, read_report
 from .jsonio import read_json
+from .audit import model_snapshot, verify_snapshot
 from .server import make_server
 
 
@@ -43,6 +44,8 @@ def main():
     compare_parser.add_argument("ids", nargs="+", help="Two to four distinct fictional IDs")
     train = sub.add_parser("train")
     train.add_argument("--output", default=str(Path("models") / "tfidf.json"))
+    verify_model = sub.add_parser("verify-model")
+    verify_model.add_argument("path")
     evaluate_parser = sub.add_parser("evaluate")
     evaluate_parser.add_argument("--output")
     evaluate_parser.add_argument("--kind", choices=["opportunity", "pathway"], default="opportunity")
@@ -165,9 +168,12 @@ def main():
         except ValueError as error:
             parser.error(str(error))
     elif args.command == "train":
-        model = Matcher().model
-        result = {"method": "smoothed-tfidf-logtf-l2", "document_count": model.document_count,
-                  "corpus_sha256": model.fingerprint, "idf": model.idf}
+        result = model_snapshot()
+    elif args.command == "verify-model":
+        try:
+            result = verify_snapshot(read_json(args.path, 1048576))
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
     elif args.command == "evaluate":
         result = evaluate(args.kind)
     elif args.command == "evaluation-curves":

@@ -174,6 +174,13 @@ Skill names and evidence IDs must exactly match `catalog`. Empty, duplicate, unk
 
 Training produces inspectable learned IDF weights in an ignored `models` directory. The tiny model is fitted deterministically on startup for CLI and HTTP inference; the persisted file is an audit artifact, not a required runtime dependency. Editing the catalogue intentionally changes its fingerprint and requires regenerating the published evaluation.
 
+Training now exports `fursa.tfidf-audit.v1` with synthetic/review flags, tokenizer,
+settings, catalogue/corpus fingerprints and fitted document frequencies.
+`python -m fursa verify-model models\tfidf.json` independently refits the current
+catalogue and checks provenance, vocabulary, frequencies and finite IDF weights
+(absolute tolerance 1e-12 for platform math). It never loads file weights for
+inference, authenticates an issuer or accepts personal training documents.
+
 For POSIX systems, use `models/tfidf.json` in the training command instead. All other commands are identical.
 
 ## Experience and architecture
