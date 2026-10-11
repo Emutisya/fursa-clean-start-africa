@@ -102,6 +102,8 @@ textarea { resize:vertical; min-height:76px; width:100%; padding:12px; font:inhe
 textarea[aria-invalid="true"] { border-color:var(--cp-danger) }
 select { font:inherit; color:var(--cp-text); background:var(--cp-surface); border:1px solid var(--cp-border); border-radius:10px; padding:8px; max-width:100% }
 .catalog-item { margin:12px 0 }
+dialog { color:var(--cp-text); background:var(--cp-surface); border:1px solid var(--cp-border); border-radius:16px; width:min(640px,calc(100% - 32px)); max-height:85vh; padding:24px }
+dialog::backdrop { background:var(--cp-overlay) }
 .evidence label { display:flex; gap:8px; align-items:start; font-weight:400; margin:8px 0 }
 input[type="checkbox"] { accent-color:var(--cp-accent); margin-top:5px }
 .divider { border:0; border-top:1px solid var(--cp-border); margin:24px 0 }
@@ -178,12 +180,15 @@ code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text
 </div>
 <footer>Fursa | Clean Start Africa · Research prototype · Built for exploration, not deployment in hiring.<br>Local inference only. No API keys, external fonts, analytics or downloaded model weights.</footer>
 </main>
+<dialog id="resource-dialog" aria-labelledby="resource-title"><h2 id="resource-title" tabindex="-1">Fictional resource detail</h2>
+<div id="resource-content" aria-busy="false"></div><button id="resource-close" type="button">Close resource detail</button></dialog>
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
 let catalog = null, selectedEvidence = new Set(), lastResult = null, requestId = 0;
 let pending = null;
 let browseId=0, browsePending=null;
+let detailId=0, detailPending=null, detailOpener=null;
 const presets = {
   workshop: {skills:["carpentry","welding"], evidence:["e-carpentry"]},
   energy: {skills:["solar","electrical"], evidence:[]},
@@ -218,6 +223,8 @@ async function loadBrowse() {
       const card=element("article",undefined,"pathway catalog-item"); card.dataset.resource=row.id;
       card.append(element("h3",row.title),element("p",row.description),element("p",row.skills.join(" · "),"small muted"));
       card.append(element("p",row.setting || row.status,"small muted"));
+      const inspect=element("button","Inspect simulated evidence and review routes"); inspect.type="button";
+      inspect.dataset.detail=row.id; inspect.onclick=()=>showResource(row.id,inspect); card.append(inspect);
       $("browse-results").append(card);
     });
     $("browse-status").textContent=result.items.length?`${result.items.length} fictional resource(s), sorted by ID. No ranking.`:"No resources for this catalogue filter, not a suitability judgement.";
@@ -229,6 +236,45 @@ async function loadBrowse() {
 }
 $("browse-load").onclick=loadBrowse;
 $("browse-kind").onchange=clearBrowse; $("browse-skill").onchange=clearBrowse;
+async function showResource(identifier, opener) {
+  const id=++detailId;
+  if(detailPending) detailPending.abort();
+  const controller=new AbortController(); detailPending=controller; detailOpener=opener;
+  $("resource-title").textContent="Loading fictional resource…";
+  $("resource-content").replaceChildren(); $("resource-content").setAttribute("aria-busy","true");
+  if(!$("resource-dialog").open) $("resource-dialog").showModal();
+  $("resource-title").focus();
+  try {
+    const response=await fetch("/api/resources/"+encodeURIComponent(identifier),{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(10000)])});
+    const result=await response.json();
+    if(!response.ok) throw new Error("Resource unavailable.");
+    if(id!==detailId) return;
+    $("resource-title").textContent=result.resource.title;
+    const content=$("resource-content");
+    content.append(element("p",result.resource.description),element("p","Fictional simulation. No credential, placement, eligibility assessment or provider agreement.","small muted"));
+    const evidence=element("ul"); evidence.dataset.detailEvidence="true";
+    result.evidence_options.forEach(row=>evidence.append(element("li",row.title+" · Unverified simulation")));
+    content.append(element("h3","Simulated evidence options"),evidence,element("h3","Related simulated pathways"));
+    const pathways=element("ul");
+    result.related_pathways.forEach(row=>pathways.append(element("li",row.title)));
+    content.append(pathways);
+    if(result.resource.steps) {
+      const steps=element("ol"); result.resource.steps.forEach(step=>steps.append(element("li",step)));
+      content.append(element("h3","Optional human review discussion steps"),steps);
+    }
+  } catch(error) {
+    if(id===detailId) $("resource-content").append(element("p","Cannot load this local resource. Close and try again; no selections changed."));
+  } finally {
+    if(id===detailId) { detailPending=null; $("resource-content").setAttribute("aria-busy","false"); }
+  }
+}
+$("resource-close").onclick=()=>$("resource-dialog").close();
+$("resource-dialog").addEventListener("close",()=>{
+  detailId++; if(detailPending) detailPending.abort(); detailPending=null;
+  $("resource-content").replaceChildren(); $("resource-content").setAttribute("aria-busy","false");
+  if(detailOpener?.isConnected) detailOpener.focus(); else $("browse-load").focus();
+  detailOpener=null;
+});
 function setStatus(text, error=false) { $("status").textContent=text; $("status").className=error?"error":""; }
 function invalidate() {
   requestId++; lastResult=null;
@@ -381,7 +427,7 @@ $("cancel").onclick=()=>{
   $("submit").focus();
 };
 document.addEventListener("keydown",event=>{
-  if(event.key==="Escape" && pending) { event.preventDefault(); $("cancel").click(); }
+  if(event.key==="Escape" && pending && !$("resource-dialog").open) { event.preventDefault(); $("cancel").click(); }
 });
 $("skills").oninput=()=>{ invalidate(); refresh(); };
 document.querySelectorAll("[data-preset]").forEach(button=>button.onclick=()=>{
@@ -406,7 +452,7 @@ $("export").onclick=()=>{
     refresh(); setStatus("Ready. Choose a synthetic preset or your own catalogue selections.");
   } catch(error) { setStatus("Cannot reach local backend. Run python -m fursa serve.",true); }
 })();
-window.addEventListener("pagehide",()=>{ invalidate(); clearBrowse(); selectedEvidence.clear(); $("skills").value=""; });
+window.addEventListener("pagehide",()=>{ if($("resource-dialog").open) $("resource-dialog").close(); invalidate(); clearBrowse(); selectedEvidence.clear(); $("skills").value=""; });
 </script>
 </body>
 </html>

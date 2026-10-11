@@ -122,6 +122,14 @@ try {
   await evaluate(`window.fetch=window.savedFetch; document.getElementById("reset").click()`);
   await evaluate(`document.getElementById("browse-panel").open=true; document.getElementById("browse-load").click()`);
   await waitFor(`document.querySelectorAll(".catalog-item").length===9`);
+  await evaluate(`document.querySelector('[data-detail="o-accounts"]').click()`);
+  await waitFor(`document.getElementById("resource-title").textContent.includes("accounts practice") && document.getElementById("resource-content").getAttribute("aria-busy")==="false"`);
+  assert.equal(await evaluate(`document.getElementById("resource-dialog").open`),true);
+  assert.equal(await evaluate(`document.querySelectorAll("[data-detail-evidence] li").length`),2);
+  await send("Input.dispatchKeyEvent",{type:"keyDown",key:"Escape",code:"Escape",windowsVirtualKeyCode:27});
+  await send("Input.dispatchKeyEvent",{type:"keyUp",key:"Escape",code:"Escape",windowsVirtualKeyCode:27});
+  await waitFor(`!document.getElementById("resource-dialog").open`);
+  assert.equal(await evaluate(`document.activeElement.dataset.detail`),"o-accounts");
   assert.equal(await evaluate(`document.getElementById("skills").value`),"");
   await evaluate(`document.getElementById("browse-kind").value="pathway"; document.getElementById("browse-kind").dispatchEvent(new Event("change")); document.getElementById("browse-load").click()`);
   await waitFor(`document.querySelectorAll(".catalog-item").length===12`);

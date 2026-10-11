@@ -230,6 +230,11 @@ explicit loading. It lists fictional resources by ID without scoring or
 changing passport selections, distinguishes empty filters from unsuitability,
 and cancels stale catalogue requests on filter changes.
 
+Catalogue cards open a native modal showing simulated evidence options, linked
+pathways and optional pathway steps. Keyboard focus stays in the modal; Escape
+or Close aborts pending detail work, clears detail content and returns focus to
+the invoking card. Inspection never changes selections or verifies samples.
+
 `python -m fursa review-plan o-solar --skills solar --evidence e-solar` builds
 an optional discussion plan separating unselected skills from unverified
 simulated sample selections. Questions concern human criteria, consent,
