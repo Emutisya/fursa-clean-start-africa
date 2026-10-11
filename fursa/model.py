@@ -62,6 +62,11 @@ class Tfidf:
             score = sum(contributions.values())
             if score >= MIN_SIMILARITY:
                 scored.append((score, {**deepcopy(item), "similarity": round(score, 6),
+                               "term_contributions": [
+                                   {"term": term, "cosine_contribution": contributions[term],
+                                    "query_weight": query[term], "resource_weight": candidate[term]}
+                                   for term in sorted(contributions, key=lambda term: (-contributions[term], term))
+                               ],
                                "shared_terms": sorted(contributions,
                                                       key=lambda term: (-contributions[term], term))[:6]}))
         return [row for _, row in sorted(scored, key=lambda item: (-item[0], item[1]["id"]))[:limit]]

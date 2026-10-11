@@ -108,6 +108,12 @@ token coverage, selected skills without catalogue opportunities or pathways,
 and a catalogue-specific no-match explanation. A nonempty vector can still
 have no resource match; token coverage is not a confidence or ability measure.
 
+Each ranked resource also exposes **all** shared term contributions with the
+query/resource normalized weights. Their products sum to its unrounded cosine
+score; the display similarity remains rounded. The first six terms remain in
+`shared_terms` for compact consumers. These are lexical explanations, not
+causal evidence about a person's abilities.
+
 Skill names and evidence IDs must exactly match `catalog`. Empty, duplicate, unknown or sensitive inputs are rejected. Selected evidence must belong to a selected skill. Evidence flags change gap explanations, **never the ranking**.
 
 Training produces inspectable learned IDF weights in an ignored `models` directory. The tiny model is fitted deterministically on startup for CLI and HTTP inference; the persisted file is an audit artifact, not a required runtime dependency. Editing the catalogue intentionally changes its fingerprint and requires regenerating the published evaluation.
