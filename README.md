@@ -131,6 +131,10 @@ presence matrix without choosing a winner or inferring eligibility.
 fictional resource IDs, simulated evidence, retrieval terms and skills that
 co-occur in catalogue opportunities. Counts are not labour-market demand.
 
+`python -m fursa related o-accounts` finds other fictional opportunities and
+pathways sharing a catalogue skill, explaining shared and additional skills.
+It excludes the source and makes no qualification-equivalence claims.
+
 ```text
 Single-file HTML / Python CLI
           |

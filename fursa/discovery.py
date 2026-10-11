@@ -74,3 +74,21 @@ def skill_map():
         ],
         "message": "Coverage and co-occurrence describe this fictional catalogue, not demand or ability.",
     }
+
+
+def related(identifier):
+    source = detail(identifier)["resource"]
+    source_skills = set(source["skills"])
+    rows = []
+    for candidate in OPPORTUNITIES + PATHWAYS:
+        overlap = source_skills & set(candidate["skills"])
+        if candidate["id"] != identifier and overlap:
+            rows.append({
+                "resource": deepcopy(candidate), "shared_skills": sorted(overlap),
+                "additional_skills": sorted(set(candidate["skills"]) - source_skills),
+            })
+    return {
+        "synthetic": True, "human_review_required": True, "source": source,
+        "related": sorted(rows, key=lambda row: row["resource"]["id"]),
+        "message": "Shared catalogue skills only; these are not recommendations or equivalence claims.",
+    }

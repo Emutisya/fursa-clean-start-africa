@@ -1,9 +1,19 @@
 import unittest
 
-from fursa.discovery import browse, compare, detail, skill_map
+from fursa.discovery import browse, compare, detail, related, skill_map
 
 
 class DiscoveryTests(unittest.TestCase):
+    def test_related_resources_explain_overlap_without_self_links(self):
+        result = related("o-accounts")
+        rows = {row["resource"]["id"]: row for row in result["related"]}
+        self.assertNotIn("o-accounts", rows)
+        self.assertEqual(rows["o-dispatch"]["shared_skills"], ["spreadsheets"])
+        self.assertEqual(rows["o-dispatch"]["additional_skills"], ["customer service", "logistics"])
+        self.assertEqual({row["resource"]["id"] for row in related("p-carpentry")["related"]}, {"o-timber"})
+        with self.assertRaises(ValueError):
+            related("unknown")
+
     def test_skill_map_distinguishes_coverage_gaps_from_co_occurrence(self):
         skills = {row["skill"]: row for row in skill_map()["skills"]}
         self.assertEqual(skills["astronomy"]["opportunities"], [])
