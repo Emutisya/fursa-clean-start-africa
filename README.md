@@ -118,6 +118,12 @@ causal evidence about a person's abilities.
 fit-document frequencies, plus resource vector sizes/norms and corpus provenance.
 This is model inspection, not a new model or an outcome evaluation.
 
+Every match carries method, fit-corpus and full-catalogue SHA-256 fingerprints,
+the query fingerprint, cutoff, result limit and deterministic tie-break rule.
+The catalogue hash includes simulated evidence and descriptive metadata;
+the corpus hash concerns fit text only. Evidence selections do not change query
+provenance or rankings. Fingerprints establish reproducibility, not authenticity.
+
 Skill names and evidence IDs must exactly match `catalog`. Empty, duplicate, unknown or sensitive inputs are rejected. Selected evidence must belong to a selected skill. Evidence flags change gap explanations, **never the ranking**.
 
 Training produces inspectable learned IDF weights in an ignored `models` directory. The tiny model is fitted deterministically on startup for CLI and HTTP inference; the persisted file is an audit artifact, not a required runtime dependency. Editing the catalogue intentionally changes its fingerprint and requires regenerating the published evaluation.

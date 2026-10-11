@@ -1,4 +1,6 @@
 """Small, deliberately fictional catalogue. No scraped or personal data."""
+import hashlib
+import json
 
 SKILLS = {
     "carpentry": "carpentry timber joinery furniture assembly measuring",
@@ -72,3 +74,10 @@ def document(item):
 
 def corpus():
     return [document(item) for item in OPPORTUNITIES + PATHWAYS] + list(SKILLS.values())
+
+
+def fingerprint():
+    snapshot = {"skills": SKILLS, "evidence": EVIDENCE,
+                "opportunities": OPPORTUNITIES, "pathways": PATHWAYS}
+    return hashlib.sha256(json.dumps(snapshot, sort_keys=True, ensure_ascii=True,
+                                    separators=(",", ":")).encode("utf-8")).hexdigest()

@@ -6,7 +6,7 @@ import re
 from copy import deepcopy
 from collections import Counter
 
-from .catalog import EVIDENCE, OPPORTUNITIES, PATHWAYS, SKILLS, corpus, document
+from .catalog import EVIDENCE, OPPORTUNITIES, PATHWAYS, SKILLS, corpus, document, fingerprint
 
 TOKEN = re.compile(r"[a-z]+")
 MIN_SIMILARITY = 0.08
@@ -130,6 +130,12 @@ class Matcher:
                                     if e["skill"] in row["skills"] and e["id"] not in evidence]
         return {
             "synthetic": True, "human_review_required": True,
+            "provenance": {
+                "method": "smoothed-tfidf-logtf-l2", "corpus_sha256": self.model.fingerprint,
+                "catalog_sha256": fingerprint(), "minimum_similarity": MIN_SIMILARITY,
+                "limit": 3, "tie_break": "full-precision cosine descending, then resource ID ascending",
+                "query_sha256": hashlib.sha256(query.encode("utf-8")).hexdigest(),
+            },
             "passport": {"skills": skills, "evidence": evidence, "verification": "Unverified synthetic selections"},
             "opportunities": matches,
             "pathways": self.model.rank(query, PATHWAYS),

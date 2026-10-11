@@ -1,10 +1,23 @@
 import unittest
+from unittest.mock import patch
 
-from fursa.catalog import corpus
+from fursa.catalog import EVIDENCE, corpus, fingerprint
 from fursa.model import Matcher, Tfidf, tokens
 
 
 class InspectionTests(unittest.TestCase):
+    def test_provenance_separates_catalogue_metadata_from_rank_input(self):
+        matcher = Matcher()
+        before = matcher.match({"skills": ["carpentry"]})["provenance"]
+        after = matcher.match({"skills": ["carpentry"], "evidence": ["e-carpentry"]})["provenance"]
+        self.assertEqual(before, after)
+        changed = [dict(row) for row in EVIDENCE]
+        changed[0]["description"] += " Revised simulation."
+        with patch("fursa.catalog.EVIDENCE", changed):
+            self.assertNotEqual(fingerprint(), before["catalog_sha256"])
+        self.assertNotEqual(before["query_sha256"],
+                            matcher.match({"skills": ["welding"]})["provenance"]["query_sha256"])
+
     def test_inspection_exposes_actual_fit_frequencies_and_resource_norms(self):
         matcher = Matcher()
         result = matcher.inspect()
