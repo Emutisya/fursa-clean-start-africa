@@ -60,7 +60,14 @@ Recorded in `evaluation.json`:
 
 The raw cases, predictions, corpus SHA-256, vocabulary size and document count are recorded alongside the averages. Re-running the command reproduces those observations; CI compares the full report with the checked-in report.
 
-This set is too small and hand-authored to estimate real deployment quality. Domain labels were authored with knowledge of the catalogue, not by independent annotators. Easy lexical overlap explains strong performance on basic cases; synonym failures demonstrate a known limitation. No train/test subject split is meaningful here because there are no people or personal records. No pathway-relevance benchmark, fairness benchmark, prospective evaluation or real-world impact study was conducted.
+This set is too small and hand-authored to estimate real deployment quality. Domain labels were authored with knowledge of the catalogue, not by independent annotators. Easy lexical overlap explains strong performance on basic cases; synonym failures demonstrate a known limitation. No train/test subject split is meaningful here because there are no people or personal records. No fairness benchmark, prospective evaluation or real-world impact study was conducted.
+
+`evaluate --kind pathway` uses a separate set of 15 manually labelled synthetic
+queries covering all 12 simulated pathways, two negative cases and one deliberately
+unsupported synonym challenge. Labels mean a catalogue domain association, not
+provider recognition or readiness for assessment. Fit text and fitting remain
+unchanged. Both kinds use the same bag-of-words leakage checks and top-three
+metrics, with separate benchmark fingerprints; their reports are not interchangeable.
 
 ## Privacy and prohibited use
 

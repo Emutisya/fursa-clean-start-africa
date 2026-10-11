@@ -45,6 +45,7 @@ def main():
     train.add_argument("--output", default=str(Path("models") / "tfidf.json"))
     evaluate_parser = sub.add_parser("evaluate")
     evaluate_parser.add_argument("--output")
+    evaluate_parser.add_argument("--kind", choices=["opportunity", "pathway"], default="opportunity")
     curves_parser = sub.add_parser("evaluation-curves")
     curves_parser.add_argument("--output")
     cutoffs_parser = sub.add_parser("evaluation-cutoffs")
@@ -165,7 +166,7 @@ def main():
         result = {"method": "smoothed-tfidf-logtf-l2", "document_count": model.document_count,
                   "corpus_sha256": model.fingerprint, "idf": model.idf}
     elif args.command == "evaluate":
-        result = evaluate()
+        result = evaluate(args.kind)
     elif args.command == "evaluation-curves":
         result = ranking_curves()
     elif args.command == "evaluation-cutoffs":

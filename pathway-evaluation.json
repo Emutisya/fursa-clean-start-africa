@@ -1,0 +1,710 @@
+{
+  "resource_kind": "pathway",
+  "fit_documents": 34,
+  "vocabulary_size": 87,
+  "corpus_sha256": "98a40f4fb83920c3f9eba0444961c33a14b7e6caa4dfddefd3e64936a42139e2",
+  "held_out_cases": 15,
+  "benchmark_sha256": "933a24e170712a9c3f334fa15e641ef34fa257ecaa977522cff516774ce3864a",
+  "positive_cases": 13,
+  "negative_cases": 2,
+  "mean_recall_at_3": 0.9230769230769231,
+  "mean_ndcg_at_3": 0.9230769230769231,
+  "mean_precision_at_3": 0.3076923076923077,
+  "mean_reciprocal_rank": 0.9230769230769231,
+  "negative_abstention_rate": 1.0,
+  "cases": [
+    {
+      "id": "p01",
+      "query": "timber joinery measuring sample",
+      "relevant": [
+        "p-carpentry"
+      ],
+      "ranked": [
+        "p-carpentry"
+      ],
+      "recall_at_3": 1.0,
+      "ndcg_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "joinery",
+          "measuring",
+          "timber"
+        ],
+        "unknown_terms": [
+          "sample"
+        ],
+        "known_token_fraction": 0.75,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "p-carpentry",
+            "similarity": 0.683969,
+            "relevant": true,
+            "shared_terms": [
+              "joinery",
+              "measuring",
+              "timber"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "p02",
+      "query": "metal welding fabrication demonstration",
+      "relevant": [
+        "p-welding"
+      ],
+      "ranked": [
+        "p-welding"
+      ],
+      "recall_at_3": 1.0,
+      "ndcg_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "demonstration",
+          "fabrication",
+          "metal",
+          "welding"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "p-welding",
+            "similarity": 0.754233,
+            "relevant": true,
+            "shared_terms": [
+              "fabrication",
+              "metal",
+              "welding",
+              "demonstration"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "p03",
+      "query": "solar photovoltaic panels sample",
+      "relevant": [
+        "p-solar"
+      ],
+      "ranked": [
+        "p-solar"
+      ],
+      "recall_at_3": 1.0,
+      "ndcg_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "panels",
+          "photovoltaic",
+          "solar"
+        ],
+        "unknown_terms": [
+          "sample"
+        ],
+        "known_token_fraction": 0.75,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "p-solar",
+            "similarity": 0.744473,
+            "relevant": true,
+            "shared_terms": [
+              "panels",
+              "photovoltaic",
+              "solar"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "p04",
+      "query": "electrical circuits wiring demonstration",
+      "relevant": [
+        "p-electrical"
+      ],
+      "ranked": [
+        "p-electrical"
+      ],
+      "recall_at_3": 1.0,
+      "ndcg_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "circuits",
+          "demonstration",
+          "electrical",
+          "wiring"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "p-electrical",
+            "similarity": 0.754233,
+            "relevant": true,
+            "shared_terms": [
+              "circuits",
+              "electrical",
+              "wiring",
+              "demonstration"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "p05",
+      "query": "garment fabric sewing sample",
+      "relevant": [
+        "p-sewing"
+      ],
+      "ranked": [
+        "p-sewing"
+      ],
+      "recall_at_3": 1.0,
+      "ndcg_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "fabric",
+          "sewing"
+        ],
+        "unknown_terms": [
+          "garment",
+          "sample"
+        ],
+        "known_token_fraction": 0.5,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "p-sewing",
+            "similarity": 0.60786,
+            "relevant": true,
+            "shared_terms": [
+              "fabric",
+              "sewing"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "p06",
+      "query": "food kitchen cooking hygiene demonstration",
+      "relevant": [
+        "p-food-preparation"
+      ],
+      "ranked": [
+        "p-food-preparation"
+      ],
+      "recall_at_3": 1.0,
+      "ndcg_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 5,
+        "unique_term_count": 5,
+        "known_terms": [
+          "cooking",
+          "demonstration",
+          "food",
+          "hygiene",
+          "kitchen"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "p-food-preparation",
+            "similarity": 0.867924,
+            "relevant": true,
+            "shared_terms": [
+              "cooking",
+              "food",
+              "hygiene",
+              "kitchen",
+              "demonstration"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "p07",
+      "query": "bookkeeping invoices ledger sample",
+      "relevant": [
+        "p-bookkeeping"
+      ],
+      "ranked": [
+        "p-bookkeeping"
+      ],
+      "recall_at_3": 1.0,
+      "ndcg_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "bookkeeping",
+          "invoices",
+          "ledger"
+        ],
+        "unknown_terms": [
+          "sample"
+        ],
+        "known_token_fraction": 0.75,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "p-bookkeeping",
+            "similarity": 0.744473,
+            "relevant": true,
+            "shared_terms": [
+              "bookkeeping",
+              "invoices",
+              "ledger"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "p08",
+      "query": "spreadsheets formulas tables demonstration",
+      "relevant": [
+        "p-spreadsheets"
+      ],
+      "ranked": [
+        "p-spreadsheets"
+      ],
+      "recall_at_3": 1.0,
+      "ndcg_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "demonstration",
+          "formulas",
+          "spreadsheets",
+          "tables"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "p-spreadsheets",
+            "similarity": 0.766636,
+            "relevant": true,
+            "shared_terms": [
+              "formulas",
+              "spreadsheets",
+              "tables",
+              "demonstration"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "p09",
+      "query": "customer enquiries communication sample",
+      "relevant": [
+        "p-customer-service"
+      ],
+      "ranked": [
+        "p-customer-service"
+      ],
+      "recall_at_3": 1.0,
+      "ndcg_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "communication",
+          "customer",
+          "enquiries"
+        ],
+        "unknown_terms": [
+          "sample"
+        ],
+        "known_token_fraction": 0.75,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "p-customer-service",
+            "similarity": 0.753997,
+            "relevant": true,
+            "shared_terms": [
+              "communication",
+              "customer",
+              "enquiries"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "p10",
+      "query": "logistics dispatch warehouse demonstration",
+      "relevant": [
+        "p-logistics"
+      ],
+      "ranked": [
+        "p-logistics"
+      ],
+      "recall_at_3": 1.0,
+      "ndcg_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "demonstration",
+          "dispatch",
+          "logistics",
+          "warehouse"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "p-logistics",
+            "similarity": 0.77772,
+            "relevant": true,
+            "shared_terms": [
+              "dispatch",
+              "logistics",
+              "warehouse",
+              "demonstration"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "p11",
+      "query": "horticulture irrigation seedlings sample",
+      "relevant": [
+        "p-horticulture"
+      ],
+      "ranked": [
+        "p-horticulture"
+      ],
+      "recall_at_3": 1.0,
+      "ndcg_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "horticulture",
+          "irrigation",
+          "seedlings"
+        ],
+        "unknown_terms": [
+          "sample"
+        ],
+        "known_token_fraction": 0.75,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "p-horticulture",
+            "similarity": 0.744473,
+            "relevant": true,
+            "shared_terms": [
+              "horticulture",
+              "irrigation",
+              "seedlings"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "p12",
+      "query": "plumbing leaks fittings demonstration",
+      "relevant": [
+        "p-plumbing"
+      ],
+      "ranked": [
+        "p-plumbing"
+      ],
+      "recall_at_3": 1.0,
+      "ndcg_at_3": 1.0,
+      "precision_at_3": 0.3333333333333333,
+      "reciprocal_rank": 1.0,
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "demonstration",
+          "fittings",
+          "leaks",
+          "plumbing"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "p-plumbing",
+            "similarity": 0.692936,
+            "relevant": true,
+            "shared_terms": [
+              "fittings",
+              "leaks",
+              "plumbing",
+              "demonstration"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "p13",
+      "query": "astronomy telescope galaxy sample",
+      "relevant": [],
+      "ranked": [],
+      "recall_at_3": null,
+      "ndcg_at_3": null,
+      "precision_at_3": null,
+      "reciprocal_rank": null,
+      "correct_abstention": true,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "astronomy",
+          "telescope"
+        ],
+        "unknown_terms": [
+          "galaxy",
+          "sample"
+        ],
+        "known_token_fraction": 0.5,
+        "has_vector": true,
+        "returned_count": 0,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "correct_abstention",
+        "results": []
+      }
+    },
+    {
+      "id": "p14",
+      "query": "oboe sonatas xylophone",
+      "relevant": [],
+      "ranked": [],
+      "recall_at_3": null,
+      "ndcg_at_3": null,
+      "precision_at_3": null,
+      "reciprocal_rank": null,
+      "correct_abstention": true,
+      "diagnostics": {
+        "token_count": 3,
+        "unique_term_count": 3,
+        "known_terms": [],
+        "unknown_terms": [
+          "oboe",
+          "sonatas",
+          "xylophone"
+        ],
+        "known_token_fraction": 0.0,
+        "has_vector": false,
+        "returned_count": 0,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "correct_abstention",
+        "results": []
+      }
+    },
+    {
+      "id": "p15",
+      "query": "woodwork cabinetry dovetails",
+      "relevant": [
+        "p-carpentry"
+      ],
+      "ranked": [],
+      "recall_at_3": 0.0,
+      "ndcg_at_3": 0.0,
+      "precision_at_3": 0.0,
+      "reciprocal_rank": 0,
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 3,
+        "unique_term_count": 3,
+        "known_terms": [],
+        "unknown_terms": [
+          "cabinetry",
+          "dovetails",
+          "woodwork"
+        ],
+        "known_token_fraction": 0.0,
+        "has_vector": false,
+        "returned_count": 0,
+        "missed_relevant": [
+          "p-carpentry"
+        ],
+        "irrelevant_returned": [],
+        "outcome": "missed_relevant",
+        "results": []
+      }
+    }
+  ],
+  "resource_coverage": {
+    "p-bookkeeping": {
+      "relevant_cases": 1,
+      "retrieved_relevant_cases": 1,
+      "retrieved_irrelevant_cases": 0
+    },
+    "p-carpentry": {
+      "relevant_cases": 2,
+      "retrieved_relevant_cases": 1,
+      "retrieved_irrelevant_cases": 0
+    },
+    "p-customer-service": {
+      "relevant_cases": 1,
+      "retrieved_relevant_cases": 1,
+      "retrieved_irrelevant_cases": 0
+    },
+    "p-electrical": {
+      "relevant_cases": 1,
+      "retrieved_relevant_cases": 1,
+      "retrieved_irrelevant_cases": 0
+    },
+    "p-food-preparation": {
+      "relevant_cases": 1,
+      "retrieved_relevant_cases": 1,
+      "retrieved_irrelevant_cases": 0
+    },
+    "p-horticulture": {
+      "relevant_cases": 1,
+      "retrieved_relevant_cases": 1,
+      "retrieved_irrelevant_cases": 0
+    },
+    "p-logistics": {
+      "relevant_cases": 1,
+      "retrieved_relevant_cases": 1,
+      "retrieved_irrelevant_cases": 0
+    },
+    "p-plumbing": {
+      "relevant_cases": 1,
+      "retrieved_relevant_cases": 1,
+      "retrieved_irrelevant_cases": 0
+    },
+    "p-sewing": {
+      "relevant_cases": 1,
+      "retrieved_relevant_cases": 1,
+      "retrieved_irrelevant_cases": 0
+    },
+    "p-solar": {
+      "relevant_cases": 1,
+      "retrieved_relevant_cases": 1,
+      "retrieved_irrelevant_cases": 0
+    },
+    "p-spreadsheets": {
+      "relevant_cases": 1,
+      "retrieved_relevant_cases": 1,
+      "retrieved_irrelevant_cases": 0
+    },
+    "p-welding": {
+      "relevant_cases": 1,
+      "retrieved_relevant_cases": 1,
+      "retrieved_irrelevant_cases": 0
+    }
+  }
+}

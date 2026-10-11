@@ -348,7 +348,13 @@ See the full recorded run in [`evaluation.json`](evaluation.json), not an aspira
 
 Relevance labels are manually authored synthetic sets, not employer or assessor judgements. Recall is relevant items retrieved divided by relevant items available. Precision@3 always divides by 3, even if fewer than three results survive the fixed 0.08 similarity cutoff. MRR uses the first relevant rank among returned results. Negative cases are excluded from positive relevance averages and assessed separately.
 
-The held-out texts are not fit documents; normalized token sequences are checked for exact overlap and query duplicates. Queries intentionally share domain vocabulary with the catalogue, as retrieval queries should. Most are easy lexical scenarios, with only two synonym challenges. This is **not** an independently collected test population, robust semantic evaluation or proof of generalization. The pathway rankings and real users' outcomes have not been evaluated.
+The held-out texts are not fit documents; normalized token-count bags are checked for exact overlap and reordered query duplicates. Queries intentionally share domain vocabulary with the catalogue, as retrieval queries should. Most are easy lexical scenarios, with only two synonym challenges. This is **not** an independently collected test population, robust semantic evaluation or proof of generalization. Real users' outcomes have not been evaluated.
+
+`python -m fursa evaluate --kind pathway --output pathway-evaluation.json`
+records a distinct 15-query synthetic pathway benchmark: all 12 domains, two
+negative cases and one synonym-only failure. Labels describe catalogue relevance,
+not accredited providers, assessment success or credential eligibility. Reports
+identify their resource kind and separate benchmark provenance.
 
 ### Optional real-browser smoke test
 

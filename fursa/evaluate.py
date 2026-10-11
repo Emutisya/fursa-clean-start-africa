@@ -3,7 +3,7 @@ import hashlib
 import json
 import math
 from collections import Counter
-from .catalog import OPPORTUNITIES, corpus, document
+from .catalog import OPPORTUNITIES, PATHWAYS, corpus, document
 from .model import Tfidf, tokens
 
 CASES = [
@@ -22,34 +22,55 @@ CASES = [
     ("q13", "woodwork cabinetry dovetails sanding", {"o-timber"}),
     ("q14", "tailor clothing needle alteration", {"o-textile"}),
 ]
+PATHWAY_CASES = [
+    ("p01", "timber joinery measuring sample", {"p-carpentry"}),
+    ("p02", "metal welding fabrication demonstration", {"p-welding"}),
+    ("p03", "solar photovoltaic panels sample", {"p-solar"}),
+    ("p04", "electrical circuits wiring demonstration", {"p-electrical"}),
+    ("p05", "garment fabric sewing sample", {"p-sewing"}),
+    ("p06", "food kitchen cooking hygiene demonstration", {"p-food-preparation"}),
+    ("p07", "bookkeeping invoices ledger sample", {"p-bookkeeping"}),
+    ("p08", "spreadsheets formulas tables demonstration", {"p-spreadsheets"}),
+    ("p09", "customer enquiries communication sample", {"p-customer-service"}),
+    ("p10", "logistics dispatch warehouse demonstration", {"p-logistics"}),
+    ("p11", "horticulture irrigation seedlings sample", {"p-horticulture"}),
+    ("p12", "plumbing leaks fittings demonstration", {"p-plumbing"}),
+    ("p13", "astronomy telescope galaxy sample", set()),
+    ("p14", "oboe sonatas xylophone", set()),
+    ("p15", "woodwork cabinetry dovetails", {"p-carpentry"}),
+]
 
 
-def evaluate():
+def evaluate(kind="opportunity"):
+    if not isinstance(kind, str) or kind not in {"opportunity", "pathway"}:
+        raise ValueError("Evaluation kind must be opportunity or pathway.")
+    cases = CASES if kind == "opportunity" else PATHWAY_CASES
+    resources = OPPORTUNITIES if kind == "opportunity" else PATHWAYS
     training = corpus()
     canonical = lambda text: tuple(sorted(Counter(tokens(text)).items()))
-    if (not isinstance(CASES, (list, tuple)) or any(
+    if (not isinstance(cases, (list, tuple)) or any(
             not isinstance(case, (list, tuple)) or len(case) != 3
             or not isinstance(case[0], str) or not case[0].strip()
             or not isinstance(case[1], str) or not tokens(case[1])
             or not isinstance(case[2], (set, frozenset))
             or any(not isinstance(identifier, str) for identifier in case[2])
-            for case in CASES)):
+            for case in cases)):
         raise ValueError("Evaluation cases require an ID, usable query text and a set of resource IDs.")
-    if not CASES or not any(relevant for _, _, relevant in CASES) or not any(not relevant for _, _, relevant in CASES):
+    if not cases or not any(relevant for _, _, relevant in cases) or not any(not relevant for _, _, relevant in cases):
         raise ValueError("Evaluation requires both relevant and unmatched queries.")
-    ids = [identifier for identifier, _, _ in CASES]
-    queries = [canonical(text) for _, text, _ in CASES]
+    ids = [identifier for identifier, _, _ in cases]
+    queries = [canonical(text) for _, text, _ in cases]
     if len(set(ids)) != len(ids) or len(set(queries)) != len(queries):
         raise ValueError("Duplicate evaluation ID or query.")
     if set(queries) & {canonical(text) for text in training}:
         raise ValueError("Exact training/evaluation query overlap.")
-    allowed = {row["id"] for row in OPPORTUNITIES}
-    if any(not isinstance(relevant, (set, frozenset)) or not relevant <= allowed for _, _, relevant in CASES):
+    allowed = {row["id"] for row in resources}
+    if any(not isinstance(relevant, (set, frozenset)) or not relevant <= allowed for _, _, relevant in cases):
         raise ValueError("Evaluation relevance labels must reference catalogued opportunities.")
     model = Tfidf(training)
     rows = []
-    for id, query, relevant in CASES:
-        results = model.rank(query, OPPORTUNITIES)
+    for id, query, relevant in cases:
+        results = model.rank(query, resources)
         ranked = [row["id"] for row in results]
         hits = len(set(ranked) & relevant)
         dcg = sum(1 / math.log2(i + 2) for i, item in enumerate(ranked) if item in relevant)
@@ -88,10 +109,11 @@ def evaluate():
         } for identifier in sorted(allowed)
     }
     return {
+        "resource_kind": kind,
         "fit_documents": model.document_count, "vocabulary_size": len(model.idf),
         "corpus_sha256": model.fingerprint, "held_out_cases": len(rows),
         "benchmark_sha256": hashlib.sha256(json.dumps(
-            [(identifier, query, sorted(relevant)) for identifier, query, relevant in CASES],
+            [(identifier, query, sorted(relevant)) for identifier, query, relevant in cases],
             ensure_ascii=True, separators=(",", ":"),
         ).encode("utf-8")).hexdigest(),
         "positive_cases": len(positive), "negative_cases": len(negative),

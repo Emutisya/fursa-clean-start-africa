@@ -7,6 +7,18 @@ from fursa.reporting import compare_reports
 
 
 class EvaluationToolsTests(unittest.TestCase):
+    def test_pathway_benchmark_covers_every_pathway_and_keeps_synonym_failure(self):
+        report = evaluate("pathway")
+        self.assertEqual(report, evaluate("pathway"))
+        rows = {row["id"]: row for row in report["cases"]}
+        self.assertEqual(rows["p15"]["ranked"], [])
+        self.assertEqual(rows["p15"]["diagnostics"]["outcome"], "missed_relevant")
+        self.assertEqual(report["negative_abstention_rate"], 1)
+        self.assertTrue(all(row["relevant_cases"] >= 1 for row in report["resource_coverage"].values()))
+        self.assertTrue(all(identifier.startswith("p-") for row in report["cases"] for identifier in row["ranked"]))
+        with self.assertRaises(ValueError):
+            compare_reports(evaluate(), report)
+
     def test_simple_baselines_preserve_negative_controls_and_reproduce_tfidf_metrics(self):
         report = evaluate()
         controls = baseline_comparison()["controls"]
