@@ -6,6 +6,7 @@ from pathlib import Path
 
 from .catalog import EVIDENCE, SKILLS
 from .evaluate import evaluate
+from .discovery import browse
 from .model import Matcher
 from .server import make_server
 
@@ -14,6 +15,9 @@ def main():
     parser = argparse.ArgumentParser(description="Fursa | synthetic skill-first discovery")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("catalog")
+    browse_parser = sub.add_parser("browse")
+    browse_parser.add_argument("--kind", choices=["opportunity", "pathway"], default="opportunity")
+    browse_parser.add_argument("--skills", default="", help="All selected skills must occur in an item")
     train = sub.add_parser("train")
     train.add_argument("--output", default=str(Path("models") / "tfidf.json"))
     evaluate_parser = sub.add_parser("evaluate")
@@ -45,6 +49,11 @@ def main():
         return
     if args.command == "catalog":
         result = {"skills": list(SKILLS), "evidence": EVIDENCE}
+    elif args.command == "browse":
+        try:
+            result = browse(args.kind, [s.strip() for s in args.skills.split(",") if s.strip()])
+        except ValueError as error:
+            parser.error(str(error))
     elif args.command == "train":
         model = Matcher().model
         result = {"method": "smoothed-tfidf-logtf-l2", "document_count": model.document_count,

@@ -111,6 +111,14 @@ For POSIX systems, use `models/tfidf.json` in the training command instead. All 
 
 ## Experience and architecture
 
+### Offline catalogue browsing
+
+`python -m fursa browse --kind opportunity --skills "bookkeeping,spreadsheets"`
+lists fictional items containing **all** selected skills, sorted by ID without
+ranking or eligibility judgements. Omit `--skills` to browse everything, or use
+`--kind pathway` for simulated review routes. Unknown and duplicate filters are
+rejected. An empty list describes catalogue coverage, not suitability.
+
 ```text
 Single-file HTML / Python CLI
           |
