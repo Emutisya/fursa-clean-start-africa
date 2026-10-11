@@ -17,6 +17,9 @@ def tokens(text):
 
 class Tfidf:
     def __init__(self, documents):
+        if (not isinstance(documents, (list, tuple)) or not documents
+                or any(not isinstance(text, str) or not tokens(text) for text in documents)):
+            raise ValueError("Training requires a nonempty sequence of documents with tokenizable text.")
         docs = [tokens(text) for text in documents]
         frequencies = Counter(term for doc in docs for term in set(doc))
         self.idf = {term: math.log((1 + len(docs)) / (1 + count)) + 1
@@ -26,12 +29,16 @@ class Tfidf:
             json.dumps(documents, ensure_ascii=True).encode()).hexdigest()
 
     def vector(self, text):
+        if not isinstance(text, str):
+            raise ValueError("Retrieval text must be a string.")
         values = {term: (1 + math.log(count)) * self.idf[term]
                   for term, count in Counter(tokens(text)).items() if term in self.idf}
         norm = math.sqrt(sum(value * value for value in values.values()))
         return {term: value / norm for term, value in values.items()} if norm else {}
 
     def rank(self, text, items, limit=3):
+        if type(limit) is not int or limit < 1:
+            raise ValueError("Retrieval limit must be a positive integer.")
         query = self.vector(text)
         scored = []
         for item in items:

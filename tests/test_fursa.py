@@ -67,6 +67,17 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(result["opportunities"][0]["similarity"], with_evidence["opportunities"][0]["similarity"])
         self.assertTrue(result["human_review_required"])
 
+    def test_invalid_training_and_retrieval_inputs_have_explicit_errors(self):
+        for documents in (None, [], "timber", [None], [""], ["123"]):
+            with self.subTest(documents=documents), self.assertRaises(ValueError):
+                Tfidf(documents)
+        for text in (None, 1, []):
+            with self.assertRaisesRegex(ValueError, "string"):
+                self.matcher.model.vector(text)
+        for limit in (True, 0, -1, 1.5):
+            with self.assertRaisesRegex(ValueError, "positive integer"):
+                self.matcher.model.rank("timber", [], limit)
+
     def test_invalid_and_empty(self):
         for payload in [None, [], {}, {"skills": []}, {"skills": "carpentry"},
                         {"skills": ["unknown"]}, {"skills": [False]},
