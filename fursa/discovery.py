@@ -140,3 +140,28 @@ def preview_additions(payload):
         ],
         "message": "Hypothetical catalogue selections only, not learning advice, skill acquisition or outcomes.",
     }
+
+
+def combined_review(identifiers, payload):
+    from .model import validate
+
+    skills, evidence = validate(payload)
+    resources = compare(identifiers)["resources"]
+    rows = []
+    for sample in EVIDENCE:
+        associated = sorted(row["id"] for row in resources if sample["skill"] in row["skills"])
+        if associated:
+            rows.append({
+                **deepcopy(sample), "associated_resources": associated,
+                "skill_selected": sample["skill"] in skills,
+                "simulated_sample_selected": sample["id"] in evidence,
+                "verification": "Unverified simulation; human review required",
+            })
+    resource_skills = {skill for row in resources for skill in row["skills"]}
+    return {
+        "synthetic": True, "human_review_required": True,
+        "resources": resources, "evidence_discussion": sorted(rows, key=lambda row: row["id"]),
+        "skills_to_explore": sorted(resource_skills - set(skills)),
+        "selected_skills_outside_resources": sorted(set(skills) - resource_skills),
+        "message": "Deduplicated optional discussion topics across fictional resources, not a compulsory evidence checklist or assessment.",
+    }

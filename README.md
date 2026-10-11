@@ -280,6 +280,12 @@ an optional discussion plan separating unselected skills from unverified
 simulated sample selections. Questions concern human criteria, consent,
 recognition and appeals; it does not assess competence or approve evidence.
 
+`python -m fursa combined-review o-accounts o-dispatch --skills spreadsheets --evidence e-spreadsheets`
+consolidates optional simulated evidence topics across two to four fictional
+resources, listing each sample once with explicit resource links. Unselected
+skills and selected samples remain distinct; shared evidence is not equivalence,
+approval or a mandatory checklist.
+
 `python -m fursa preview-additions --skills astronomy` explores each unselected
 catalogue skill as a hypothetical additional checkbox, reporting changes in
 all surviving opportunity results (limit 12). This helps understand catalogue

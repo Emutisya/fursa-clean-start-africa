@@ -4,10 +4,23 @@ from unittest.mock import patch
 
 from fursa.catalog import OPPORTUNITIES, SKILLS, validate_catalog
 from fursa.model import Matcher
-from fursa.discovery import browse, compare, detail, preview_additions, related, review_plan, skill_map
+from fursa.discovery import browse, combined_review, compare, detail, preview_additions, related, review_plan, skill_map
 
 
 class DiscoveryTests(unittest.TestCase):
+    def test_combined_review_deduplicates_samples_with_explicit_resource_links(self):
+        payload = {"skills": ["spreadsheets", "astronomy"], "evidence": ["e-spreadsheets"]}
+        result = combined_review(["o-accounts", "o-dispatch"], payload)
+        rows = {row["id"]: row for row in result["evidence_discussion"]}
+        self.assertEqual(rows["e-spreadsheets"]["associated_resources"], ["o-accounts", "o-dispatch"])
+        self.assertTrue(rows["e-spreadsheets"]["simulated_sample_selected"])
+        self.assertFalse(rows["e-bookkeeping"]["skill_selected"])
+        self.assertEqual(result["selected_skills_outside_resources"], ["astronomy"])
+        self.assertEqual(result["skills_to_explore"], ["bookkeeping", "customer service", "logistics"])
+        self.assertEqual(result, combined_review(["o-dispatch", "o-accounts"], payload))
+        with self.assertRaises(ValueError):
+            combined_review(["o-accounts"], payload)
+
     def test_model_startup_rejects_catalogue_safety_and_reference_corruption(self):
         for field, value in (("synthetic", False), ("skills", ["unlisted"]), ("setting", "Live employer"),
                              ("name", "personal field"), ("human_review_required", 1)):

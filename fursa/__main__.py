@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .catalog import EVIDENCE, SKILLS
 from .evaluate import baseline_comparison, cutoff_diagnostics, evaluate, evaluation_slices, inspect_case, ranking_curves
-from .discovery import browse, compare, detail, preview_additions, related, review_plan, skill_map
+from .discovery import browse, combined_review, compare, detail, preview_additions, related, review_plan, skill_map
 from .model import Matcher
 from .passport import compare_selections, convert_legacy, edit_selections, export_passport, merge_selections, read_passport
 from .reporting import compare_reports, read_report
@@ -34,6 +34,10 @@ def main():
     review_parser.add_argument("id")
     review_parser.add_argument("--skills", required=True)
     review_parser.add_argument("--evidence", default="")
+    combined_parser = sub.add_parser("combined-review")
+    combined_parser.add_argument("ids", nargs="+")
+    combined_parser.add_argument("--skills", required=True)
+    combined_parser.add_argument("--evidence", default="")
     preview_parser = sub.add_parser("preview-additions")
     preview_parser.add_argument("--skills", required=True)
     sensitivity_parser = sub.add_parser("sensitivity")
@@ -146,6 +150,14 @@ def main():
     elif args.command == "review-plan":
         try:
             result = review_plan(args.id, {
+                "skills": [s.strip() for s in args.skills.split(",") if s.strip()],
+                "evidence": [s.strip() for s in args.evidence.split(",") if s.strip()],
+            })
+        except ValueError as error:
+            parser.error(str(error))
+    elif args.command == "combined-review":
+        try:
+            result = combined_review(args.ids, {
                 "skills": [s.strip() for s in args.skills.split(",") if s.strip()],
                 "evidence": [s.strip() for s in args.evidence.split(",") if s.strip()],
             })
