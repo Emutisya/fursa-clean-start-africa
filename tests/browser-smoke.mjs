@@ -130,6 +130,16 @@ try {
   await send("Input.dispatchKeyEvent",{type:"keyUp",key:"Escape",code:"Escape",windowsVirtualKeyCode:27});
   await waitFor(`!document.getElementById("resource-dialog").open`);
   assert.equal(await evaluate(`document.activeElement.dataset.detail`),"o-accounts");
+  await evaluate(`document.querySelector('[data-compare-selection="o-accounts"]').click(); document.querySelector('[data-compare-selection="o-dispatch"]').click(); document.getElementById("compare-load").click()`);
+  await waitFor(`document.querySelector("table[data-comparison]")`);
+  assert.match(await evaluate(`document.getElementById("compare-status").textContent`),/spreadsheets/);
+  assert.equal(await evaluate(`document.querySelectorAll("table[data-comparison] thead th").length`),3);
+  await evaluate(`["o-water","o-metal","o-timber"].forEach(id=>document.querySelector('[data-compare-selection="'+id+'"]').click())`);
+  assert.equal(await evaluate(`document.querySelectorAll("#compare-tray button").length`),4);
+  assert.match(await evaluate(`document.getElementById("compare-status").textContent`),/limit reached/);
+  await evaluate(`document.getElementById("reset").click()`);
+  assert.equal(await evaluate(`document.querySelectorAll("#compare-tray button").length`),0);
+  assert.equal(await evaluate(`document.querySelector("table[data-comparison]")`),null);
   assert.equal(await evaluate(`document.getElementById("skills").value`),"");
   await evaluate(`document.getElementById("browse-kind").value="pathway"; document.getElementById("browse-kind").dispatchEvent(new Event("change")); document.getElementById("browse-load").click()`);
   await waitFor(`document.querySelectorAll(".catalog-item").length===12`);

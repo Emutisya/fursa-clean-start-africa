@@ -96,7 +96,7 @@ button.primary:hover { background:var(--cp-accent-hover) }
 button:disabled { opacity:.55; cursor:wait }
 .chips { display:flex; flex-wrap:wrap; gap:6px; margin:12px 0 16px }
 .chip { font-size:12px; padding:6px 10px }
-.chip[aria-pressed="true"] { background:var(--cp-accent-soft); color:var(--cp-accent); border-color:var(--cp-accent) }
+.chip[aria-pressed="true"],button[data-compare-selection][aria-pressed="true"] { background:var(--cp-accent-soft); color:var(--cp-accent); border-color:var(--cp-accent) }
 label { display:block; font-size:13px; font-weight:650; margin:16px 0 8px }
 textarea { resize:vertical; min-height:76px; width:100%; padding:12px; font:inherit; color:var(--cp-text); background:var(--cp-bg-elevated); border:1px solid var(--cp-border); border-radius:10px }
 textarea[aria-invalid="true"] { border-color:var(--cp-danger) }
@@ -175,6 +175,9 @@ code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text
 <label for="browse-skill">Catalogue skill filter</label><select id="browse-skill"><option value="">All catalogue skills</option></select>
 <p><button id="browse-load" type="button">Load fictional catalogue</button></p>
 <p id="browse-status" role="status" class="small muted">Choose filters and load the catalogue.</p>
+<h3>Compare fictional resources</h3><p class="small muted">Choose two to four resources. No winner, eligibility or suitability score.</p>
+<div id="compare-tray"></div><p id="compare-status" role="status" class="small muted">0 of 4 resources chosen.</p>
+<button id="compare-load" type="button" disabled>Compare chosen resources</button><div id="compare-results" aria-busy="false"></div>
 <div id="browse-results" aria-busy="false"></div></details>
 </section>
 </div>
@@ -189,6 +192,8 @@ let catalog = null, selectedEvidence = new Set(), lastResult = null, requestId =
 let pending = null;
 let browseId=0, browsePending=null;
 let detailId=0, detailPending=null, detailOpener=null;
+const comparison=new Set(), resourceTitles=new Map();
+let compareId=0, comparePending=null;
 const presets = {
   workshop: {skills:["carpentry","welding"], evidence:["e-carpentry"]},
   energy: {skills:["solar","electrical"], evidence:[]},
@@ -225,6 +230,10 @@ async function loadBrowse() {
       card.append(element("p",row.setting || row.status,"small muted"));
       const inspect=element("button","Inspect simulated evidence and review routes"); inspect.type="button";
       inspect.dataset.detail=row.id; inspect.onclick=()=>showResource(row.id,inspect); card.append(inspect);
+      resourceTitles.set(row.id,row.title);
+      const choose=element("button","Choose for comparison"); choose.type="button"; choose.dataset.compareSelection=row.id;
+      choose.setAttribute("aria-pressed",String(comparison.has(row.id)));
+      choose.onclick=()=>toggleComparison(row.id); card.append(choose);
       $("browse-results").append(card);
     });
     $("browse-status").textContent=result.items.length?`${result.items.length} fictional resource(s), sorted by ID. No ranking.`:"No resources for this catalogue filter, not a suitability judgement.";
@@ -236,6 +245,57 @@ async function loadBrowse() {
 }
 $("browse-load").onclick=loadBrowse;
 $("browse-kind").onchange=clearBrowse; $("browse-skill").onchange=clearBrowse;
+function refreshComparison() {
+  compareId++; if(comparePending) comparePending.abort(); comparePending=null;
+  $("compare-results").replaceChildren(); $("compare-results").setAttribute("aria-busy","false");
+  $("compare-load").disabled=comparison.size<2;
+  $("compare-status").textContent=`${comparison.size} of 4 resources chosen. Choose two to four to compare.`;
+  const focused=document.activeElement.dataset.removeComparison;
+  $("compare-tray").replaceChildren();
+  [...comparison].sort().forEach(identifier=>{
+    const remove=element("button","Remove "+resourceTitles.get(identifier)); remove.type="button"; remove.dataset.removeComparison=identifier;
+    remove.onclick=()=>toggleComparison(identifier); $("compare-tray").append(remove);
+  });
+  document.querySelectorAll("[data-compare-selection]").forEach(button=>button.setAttribute("aria-pressed",String(comparison.has(button.dataset.compareSelection))));
+  if(focused) {
+    const replacement=[...$("compare-tray").querySelectorAll("button")].find(button=>button.dataset.removeComparison===focused);
+    (replacement || $("compare-tray").querySelector("button") || $("browse-load")).focus();
+  }
+}
+function toggleComparison(identifier) {
+  if(comparison.has(identifier)) comparison.delete(identifier);
+  else if(comparison.size<4) comparison.add(identifier);
+  else { $("compare-status").textContent="Four-resource limit reached. Remove a chosen resource before adding another."; return; }
+  refreshComparison();
+}
+$("compare-load").onclick=async()=>{
+  const id=++compareId, controller=new AbortController(); comparePending=controller;
+  $("compare-load").disabled=true; $("compare-results").setAttribute("aria-busy","true");
+  $("compare-status").textContent="Comparing fictional catalogue skills…";
+  const query=new URLSearchParams(); [...comparison].sort().forEach(identifier=>query.append("id",identifier));
+  try {
+    const response=await fetch("/api/compare?"+query,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(10000)])});
+    const result=await response.json(); if(!response.ok) throw new Error("Comparison unavailable.");
+    if(id!==compareId) return;
+    const scroll=element("div",undefined,"table-scroll"), table=element("table");
+    table.dataset.comparison="true"; table.append(element("caption","Skill presence in fictional resources, not a preferred option or competence judgement."));
+    const head=element("thead"), heading=element("tr"), first=element("th","Catalogue skill"); first.scope="col"; heading.append(first);
+    result.resources.forEach(row=>{ const cell=element("th",row.title); cell.scope="col"; heading.append(cell); });
+    head.append(heading); table.append(head);
+    const body=element("tbody");
+    Object.entries(result.skill_matrix).forEach(([skill,ids])=>{
+      const line=element("tr"), name=element("th",skill); name.scope="row"; line.append(name);
+      result.resources.forEach(row=>line.append(element("td",ids.includes(row.id)?"In catalogue description":"Not listed")));
+      body.append(line);
+    });
+    table.append(body); scroll.append(table); $("compare-results").replaceChildren(scroll);
+    $("compare-status").textContent="Common catalogue skills: "+(result.common_skills.join(", ") || "None.")+" No winner is selected.";
+  } catch(error) {
+    if(id===compareId) $("compare-status").textContent="Cannot compare locally. Check the server and try again.";
+  } finally {
+    if(id===compareId) { comparePending=null; $("compare-load").disabled=comparison.size<2; $("compare-results").setAttribute("aria-busy","false"); }
+  }
+};
 async function showResource(identifier, opener) {
   const id=++detailId;
   if(detailPending) detailPending.abort();
@@ -434,7 +494,7 @@ document.querySelectorAll("[data-preset]").forEach(button=>button.onclick=()=>{
   const preset=presets[button.dataset.preset]; $("skills").value=preset.skills.join(", ");
   selectedEvidence=new Set(preset.evidence); invalidate(); refresh(); match();
 });
-$("reset").onclick=()=>{ $("skills").value=""; selectedEvidence.clear(); invalidate(); refresh(); setStatus("Selections cleared. No server data was stored."); };
+$("reset").onclick=()=>{ $("skills").value=""; selectedEvidence.clear(); comparison.clear(); refreshComparison(); invalidate(); refresh(); setStatus("Selections cleared. No server data was stored."); };
 $("export").onclick=()=>{
   if (!lastResult) { setStatus("Explore first to export a validated synthetic passport.",true); return; }
   const passport={project:"Fursa | Clean Start Africa",synthetic:true,credential_issued:false,human_review_required:true,...lastResult.passport};
@@ -452,7 +512,7 @@ $("export").onclick=()=>{
     refresh(); setStatus("Ready. Choose a synthetic preset or your own catalogue selections.");
   } catch(error) { setStatus("Cannot reach local backend. Run python -m fursa serve.",true); }
 })();
-window.addEventListener("pagehide",()=>{ if($("resource-dialog").open) $("resource-dialog").close(); invalidate(); clearBrowse(); selectedEvidence.clear(); $("skills").value=""; });
+window.addEventListener("pagehide",()=>{ if($("resource-dialog").open) $("resource-dialog").close(); comparison.clear(); refreshComparison(); invalidate(); clearBrowse(); selectedEvidence.clear(); $("skills").value=""; });
 </script>
 </body>
 </html>

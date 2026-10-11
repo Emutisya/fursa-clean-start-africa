@@ -235,6 +235,11 @@ pathways and optional pathway steps. Keyboard focus stays in the modal; Escape
 or Close aborts pending detail work, clears detail content and returns focus to
 the invoking card. Inspection never changes selections or verifies samples.
 
+The browser's comparison tray accepts two to four fictional resources across
+catalogue filters and displays a captioned skill-presence matrix and shared
+skills. It never picks a winner. Removing a choice cancels stale comparison
+work and preserves keyboard focus; Reset clears the tray and comparison.
+
 `python -m fursa review-plan o-solar --skills solar --evidence e-solar` builds
 an optional discussion plan separating unselected skills from unverified
 simulated sample selections. Questions concern human criteria, consent,
