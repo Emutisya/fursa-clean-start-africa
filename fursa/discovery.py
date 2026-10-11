@@ -116,3 +116,27 @@ def review_plan(identifier, payload):
         ],
         "message": "Optional discussion plan, not requirements, proof or an assessment decision.",
     }
+
+
+def preview_additions(payload):
+    from .model import Matcher, validate
+
+    skills, evidence = validate(payload)
+    matcher = Matcher()
+    baseline = matcher.match({"skills": skills, "evidence": evidence}, 12)
+    baseline_ids = {row["id"] for row in baseline["opportunities"]}
+    return {
+        "synthetic": True, "human_review_required": True,
+        "baseline_opportunities": sorted(baseline_ids),
+        "scenarios": [
+            {
+                "added_skill": skill,
+                "ranked_opportunities": [row["id"] for row in result["opportunities"]],
+                "newly_visible": sorted({row["id"] for row in result["opportunities"]} - baseline_ids),
+                "no_longer_visible": sorted(baseline_ids - {row["id"] for row in result["opportunities"]}),
+            }
+            for skill in sorted(set(SKILLS) - set(skills))
+            for result in [matcher.match({"skills": [*skills, skill], "evidence": evidence}, 12)]
+        ],
+        "message": "Hypothetical catalogue selections only, not learning advice, skill acquisition or outcomes.",
+    }

@@ -199,6 +199,11 @@ an optional discussion plan separating unselected skills from unverified
 simulated sample selections. Questions concern human criteria, consent,
 recognition and appeals; it does not assess competence or approve evidence.
 
+`python -m fursa preview-additions --skills astronomy` explores each unselected
+catalogue skill as a hypothetical additional checkbox, reporting changes in
+all surviving opportunity results (limit 12). This helps understand catalogue
+coverage, not decide which skill someone should learn or predict outcomes.
+
 ```text
 Single-file HTML / Python CLI
           |

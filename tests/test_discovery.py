@@ -1,9 +1,20 @@
 import unittest
 
-from fursa.discovery import browse, compare, detail, related, review_plan, skill_map
+from fursa.catalog import SKILLS
+from fursa.discovery import browse, compare, detail, preview_additions, related, review_plan, skill_map
 
 
 class DiscoveryTests(unittest.TestCase):
+    def test_addition_preview_uses_only_unselected_catalogue_skills(self):
+        result = preview_additions({"skills": ["astronomy"]})
+        self.assertEqual(result["baseline_opportunities"], [])
+        rows = {row["added_skill"]: row for row in result["scenarios"]}
+        self.assertNotIn("astronomy", rows)
+        self.assertIn("o-timber", rows["carpentry"]["newly_visible"])
+        self.assertEqual(preview_additions({"skills": list(SKILLS)})["scenarios"], [])
+        with self.assertRaises(ValueError):
+            preview_additions({"skills": ["real biography"]})
+
     def test_review_plan_distinguishes_missing_skills_and_unverified_samples(self):
         result = review_plan("o-solar", {"skills": ["solar"], "evidence": ["e-solar"]})
         rows = {row["skill"]: row for row in result["evidence_review"]}

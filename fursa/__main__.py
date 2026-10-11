@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .catalog import EVIDENCE, SKILLS
 from .evaluate import evaluate
-from .discovery import browse, compare, detail, related, review_plan, skill_map
+from .discovery import browse, compare, detail, preview_additions, related, review_plan, skill_map
 from .model import Matcher
 from .passport import compare_selections, edit_selections, export_passport, merge_selections, read_passport
 from .server import make_server
@@ -29,6 +29,8 @@ def main():
     review_parser.add_argument("id")
     review_parser.add_argument("--skills", required=True)
     review_parser.add_argument("--evidence", default="")
+    preview_parser = sub.add_parser("preview-additions")
+    preview_parser.add_argument("--skills", required=True)
     compare_parser = sub.add_parser("compare")
     compare_parser.add_argument("ids", nargs="+", help="Two to four distinct fictional IDs")
     train = sub.add_parser("train")
@@ -105,6 +107,11 @@ def main():
                 "skills": [s.strip() for s in args.skills.split(",") if s.strip()],
                 "evidence": [s.strip() for s in args.evidence.split(",") if s.strip()],
             })
+        except ValueError as error:
+            parser.error(str(error))
+    elif args.command == "preview-additions":
+        try:
+            result = preview_additions({"skills": [s.strip() for s in args.skills.split(",") if s.strip()]})
         except ValueError as error:
             parser.error(str(error))
     elif args.command == "compare":
