@@ -11,6 +11,15 @@ HTML = Path(__file__).resolve().parent.parent / "web" / "index.html"
 MAX_BODY = 4096
 
 
+def unique_fields(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("Duplicate JSON fields are not accepted.")
+        result[key] = value
+    return result
+
+
 def make_server(port=8765):
     matcher = Matcher()
 
@@ -29,7 +38,20 @@ def make_server(port=8765):
             self.end_headers()
             self.wfile.write(data)
 
+        def allowed(self):
+            hosts = {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"}
+            if self.headers.get("Host") not in hosts:
+                self.send(403, {"error": "Loopback Host required."})
+                return False
+            origin = self.headers.get("Origin")
+            if origin is not None and origin not in {f"http://{host}" for host in hosts}:
+                self.send(403, {"error": "Cross-origin requests are not accepted."})
+                return False
+            return True
+
         def do_GET(self):
+            if not self.allowed():
+                return
             path = urlsplit(self.path).path
             if path == "/":
                 self.send(200, HTML.read_bytes(), "text/html")
@@ -41,27 +63,29 @@ def make_server(port=8765):
                 self.send(404, {"error": "Not found."})
 
         def do_POST(self):
+            if not self.allowed():
+                return
             if urlsplit(self.path).path != "/api/match":
                 self.send(404, {"error": "Not found."})
-                return
-            host = self.headers.get("Host", "")
-            if host not in {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"}:
-                self.send(403, {"error": "Loopback Host required."})
-                return
-            origin = self.headers.get("Origin")
-            if origin and origin not in {f"http://127.0.0.1:{self.server.server_port}", f"http://localhost:{self.server.server_port}"}:
-                self.send(403, {"error": "Cross-origin requests are not accepted."})
                 return
             if self.headers.get("Content-Type", "").split(";")[0].strip() != "application/json":
                 self.send(415, {"error": "Use application/json."})
                 return
             try:
-                length = int(self.headers.get("Content-Length", "0"))
+                raw_length = self.headers.get("Content-Length", "")
+                if (self.headers.get("Transfer-Encoding") is not None
+                        or len(self.headers.get_all("Content-Length", [])) != 1
+                        or not raw_length.isascii() or not raw_length.isdigit()):
+                    raise ValueError("One decimal Content-Length is required; chunked bodies are unsupported.")
+                length = int(raw_length)
                 if not 0 < length <= MAX_BODY:
                     self.send(413, {"error": "JSON body must be 1 to 4096 bytes."})
                     return
                 self.connection.settimeout(5)
-                payload = json.loads(self.rfile.read(length))
+                raw = self.rfile.read(length)
+                if len(raw) != length:
+                    raise ValueError("Incomplete request body.")
+                payload = json.loads(raw.decode("utf-8"), object_pairs_hook=unique_fields)
                 result = matcher.match(payload)
             except (ValueError, UnicodeError, RecursionError):
                 self.send(400, {"error": "Invalid input. Use catalogued skills and simulated evidence only."})

@@ -171,6 +171,13 @@ class HttpTests(unittest.TestCase):
         self.assertIn(b"Skills first. Human decisions always.", raw)
 
     def test_http_input_boundaries(self):
+        headers = {"Content-Type": "application/json"}
+        for body in (json.dumps({"skills": ["carpentry"]}).encode("utf-16"),
+                     '{"skills":["carpentry"],"skills":["welding"]}'):
+            self.assertEqual(self.request("POST", "/api/match", body, headers)[0], 400)
+        self.assertEqual(self.request("GET", "/api/catalog", headers={"Host": "example.invalid"})[0], 403)
+        self.assertEqual(self.request("POST", "/api/match", "{}", {**headers, "Transfer-Encoding": "chunked"})[0], 400)
+        self.assertEqual(self.request("POST", "/api/match", "{}", {**headers, "Content-Length": "+2"})[0], 400)
         self.assertEqual(self.post({"skills": []})[0], 400)
         self.assertEqual(self.post({"skills": ["carpentry"], "offence_type": "x"})[0], 400)
         self.assertEqual(self.request("POST", "/api/match", "{", {"Content-Type": "application/json"})[0], 400)
