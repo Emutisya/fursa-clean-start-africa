@@ -225,6 +225,11 @@ co-occur in catalogue opportunities. Counts are not labour-market demand.
 pathways sharing a catalogue skill, explaining shared and additional skills.
 It excludes the source and makes no qualification-equivalence claims.
 
+The dashboard's full-catalogue browser uses bounded kind/skill dropdowns and
+explicit loading. It lists fictional resources by ID without scoring or
+changing passport selections, distinguishes empty filters from unsuitability,
+and cancels stale catalogue requests on filter changes.
+
 `python -m fursa review-plan o-solar --skills solar --evidence e-solar` builds
 an optional discussion plan separating unselected skills from unverified
 simulated sample selections. Questions concern human criteria, consent,

@@ -90,7 +90,7 @@ p { margin:8px 0 16px }
 .presets { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 24px }
 button { font:inherit; cursor:pointer; border:1px solid var(--cp-border); color:var(--cp-text); background:var(--cp-surface); border-radius:10px; padding:8px 12px }
 button:hover { border-color:var(--cp-accent); background:var(--cp-accent-soft) }
-button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible,summary:focus-visible { outline:3px solid var(--cp-accent); outline-offset:3px }
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible,summary:focus-visible { outline:3px solid var(--cp-accent); outline-offset:3px }
 button.primary { color:var(--cp-accent-fg); background:var(--cp-accent); border-color:var(--cp-accent); font-weight:650; width:100%; padding:12px }
 button.primary:hover { background:var(--cp-accent-hover) }
 button:disabled { opacity:.55; cursor:wait }
@@ -100,6 +100,8 @@ button:disabled { opacity:.55; cursor:wait }
 label { display:block; font-size:13px; font-weight:650; margin:16px 0 8px }
 textarea { resize:vertical; min-height:76px; width:100%; padding:12px; font:inherit; color:var(--cp-text); background:var(--cp-bg-elevated); border:1px solid var(--cp-border); border-radius:10px }
 textarea[aria-invalid="true"] { border-color:var(--cp-danger) }
+select { font:inherit; color:var(--cp-text); background:var(--cp-surface); border:1px solid var(--cp-border); border-radius:10px; padding:8px; max-width:100% }
+.catalog-item { margin:12px 0 }
 .evidence label { display:flex; gap:8px; align-items:start; font-weight:400; margin:8px 0 }
 input[type="checkbox"] { accent-color:var(--cp-accent); margin-top:5px }
 .divider { border:0; border-top:1px solid var(--cp-border); margin:24px 0 }
@@ -165,6 +167,13 @@ code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text
 <div class="result-head"><div><div class="step">02 / EXPLORE POSSIBILITIES</div><h2>Skills to opportunity</h2><p class="small muted">Catalog similarity, not suitability. Human review is required for every next step.</p></div></div>
 <div id="results" aria-busy="false"><div class="empty"><h3>Start with what you know.</h3><p class="muted">Choose a preset or build a synthetic skills passport to see ranked, fictional opportunities.</p></div></div>
 <div class="method"><strong class="small">What is the model actually doing?</strong><p class="small muted">A classical TF-IDF model learns vocabulary and inverse document frequencies from the synthetic skill, opportunity and pathway catalogue. Cosine similarity retrieves overlapping terms. Evidence flags identify missing samples, not eligibility. Similarities are not probabilities.</p><details><summary>Limits &amp; data boundaries</summary><p>Only selected skill names and simulated evidence IDs reach the local backend. No names, offence types, age, gender, nationality, ethnicity, disability or other sensitive attributes are accepted. No data is saved by the server. Your browser holds the current selections until reset or reload.</p><p>These small English-only catalogues are not evidence of fairness, credential recognition, employment outcomes or performance in real communities. Unknown language and uncommon skills can miss opportunities. Ask a human adviser and verify providers independently.</p></details></div>
+<details id="browse-panel" class="method"><summary>Browse the full fictional catalogue without ranking</summary>
+<p class="small muted">No live openings, provider agreements or eligibility advice. Browsing does not alter your passport selections.</p>
+<label for="browse-kind">Resource kind</label><select id="browse-kind"><option value="opportunity">Fictional opportunities</option><option value="pathway">Simulated pathways</option></select>
+<label for="browse-skill">Catalogue skill filter</label><select id="browse-skill"><option value="">All catalogue skills</option></select>
+<p><button id="browse-load" type="button">Load fictional catalogue</button></p>
+<p id="browse-status" role="status" class="small muted">Choose filters and load the catalogue.</p>
+<div id="browse-results" aria-busy="false"></div></details>
 </section>
 </div>
 <footer>Fursa | Clean Start Africa · Research prototype · Built for exploration, not deployment in hiring.<br>Local inference only. No API keys, external fonts, analytics or downloaded model weights.</footer>
@@ -174,6 +183,7 @@ code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text
 const $ = id => document.getElementById(id);
 let catalog = null, selectedEvidence = new Set(), lastResult = null, requestId = 0;
 let pending = null;
+let browseId=0, browsePending=null;
 const presets = {
   workshop: {skills:["carpentry","welding"], evidence:["e-carpentry"]},
   energy: {skills:["solar","electrical"], evidence:[]},
@@ -187,6 +197,38 @@ function element(tag, text, cls) {
   return el;
 }
 function skillValues() { return $("skills").value.split(",").map(s => s.trim()).filter(Boolean); }
+function clearBrowse() {
+  browseId++; if(browsePending) browsePending.abort(); browsePending=null;
+  $("browse-load").disabled=false; $("browse-results").setAttribute("aria-busy","false");
+  $("browse-results").replaceChildren(); $("browse-status").textContent="Filters changed. Load the catalogue again.";
+}
+async function loadBrowse() {
+  clearBrowse();
+  const id=++browseId, controller=new AbortController(); browsePending=controller;
+  $("browse-load").disabled=true; $("browse-results").setAttribute("aria-busy","true");
+  $("browse-status").textContent="Loading fictional catalogue…";
+  const query=new URLSearchParams({kind:$("browse-kind").value});
+  if($("browse-skill").value) query.set("skill",$("browse-skill").value);
+  try {
+    const response=await fetch("/api/resources?"+query,{signal:AbortSignal.any([controller.signal,AbortSignal.timeout(10000)])});
+    const result=await response.json();
+    if(!response.ok) throw new Error("Catalogue unavailable.");
+    if(id!==browseId) return;
+    result.items.forEach(row=>{
+      const card=element("article",undefined,"pathway catalog-item"); card.dataset.resource=row.id;
+      card.append(element("h3",row.title),element("p",row.description),element("p",row.skills.join(" · "),"small muted"));
+      card.append(element("p",row.setting || row.status,"small muted"));
+      $("browse-results").append(card);
+    });
+    $("browse-status").textContent=result.items.length?`${result.items.length} fictional resource(s), sorted by ID. No ranking.`:"No resources for this catalogue filter, not a suitability judgement.";
+  } catch(error) {
+    if(id===browseId) $("browse-status").textContent="Cannot load the local catalogue. Check the server and load again.";
+  } finally {
+    if(id===browseId) { browsePending=null; $("browse-load").disabled=false; $("browse-results").setAttribute("aria-busy","false"); }
+  }
+}
+$("browse-load").onclick=loadBrowse;
+$("browse-kind").onchange=clearBrowse; $("browse-skill").onchange=clearBrowse;
 function setStatus(text, error=false) { $("status").textContent=text; $("status").className=error?"error":""; }
 function invalidate() {
   requestId++; lastResult=null;
@@ -359,10 +401,12 @@ $("export").onclick=()=>{
   if(location.protocol==="file:") { setStatus("Open via the local server: python -m fursa serve, then http://127.0.0.1:8765. File preview cannot run Python inference.",true); return; }
   try {
     const response=await fetch("/api/catalog",{signal:AbortSignal.timeout(10000)}); if(!response.ok) throw new Error("Catalogue unavailable");
-    catalog=await response.json(); refresh(); setStatus("Ready. Choose a synthetic preset or your own catalogue selections.");
+    catalog=await response.json();
+    catalog.skills.forEach(skill=>{ const option=element("option",skill); option.value=skill; $("browse-skill").append(option); });
+    refresh(); setStatus("Ready. Choose a synthetic preset or your own catalogue selections.");
   } catch(error) { setStatus("Cannot reach local backend. Run python -m fursa serve.",true); }
 })();
-window.addEventListener("pagehide",()=>{ invalidate(); selectedEvidence.clear(); $("skills").value=""; });
+window.addEventListener("pagehide",()=>{ invalidate(); clearBrowse(); selectedEvidence.clear(); $("skills").value=""; });
 </script>
 </body>
 </html>

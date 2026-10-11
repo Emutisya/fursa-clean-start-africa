@@ -120,6 +120,14 @@ try {
   assert.equal(await evaluate(`document.getElementById("export").disabled`),true);
   assert.equal(await evaluate(`document.getElementById("skills").value`),"solar");
   await evaluate(`window.fetch=window.savedFetch; document.getElementById("reset").click()`);
+  await evaluate(`document.getElementById("browse-panel").open=true; document.getElementById("browse-load").click()`);
+  await waitFor(`document.querySelectorAll(".catalog-item").length===9`);
+  assert.equal(await evaluate(`document.getElementById("skills").value`),"");
+  await evaluate(`document.getElementById("browse-kind").value="pathway"; document.getElementById("browse-kind").dispatchEvent(new Event("change")); document.getElementById("browse-load").click()`);
+  await waitFor(`document.querySelectorAll(".catalog-item").length===12`);
+  await evaluate(`document.getElementById("browse-skill").value="astronomy"; document.getElementById("browse-skill").dispatchEvent(new Event("change")); document.getElementById("browse-load").click()`);
+  await waitFor(`document.getElementById("browse-status").textContent.includes("No resources")`);
+  assert.equal(await evaluate(`document.querySelectorAll(".catalog-item").length`),0);
   await send("Emulation.setDeviceMetricsOverride",{width:390,height:844,deviceScaleFactor:1,mobile:true});
   assert.equal(await evaluate(`document.documentElement.scrollWidth<=window.innerWidth`),true);
   await evaluate(`document.documentElement.dataset.theme="dark"`);
