@@ -37,6 +37,19 @@ class Tfidf:
         norm = math.sqrt(sum(value * value for value in values.values()))
         return {term: value / norm for term, value in values.items()} if norm else {}
 
+    def diagnostics(self, text):
+        if not isinstance(text, str):
+            raise ValueError("Retrieval text must be a string.")
+        terms = Counter(tokens(text))
+        known = sorted(set(terms) & set(self.idf))
+        unknown = sorted(set(terms) - set(self.idf))
+        return {
+            "token_count": sum(terms.values()), "unique_term_count": len(terms),
+            "known_terms": known, "unknown_terms": unknown,
+            "known_token_fraction": sum(terms[term] for term in known) / sum(terms.values()) if terms else 0,
+            "has_vector": bool(known),
+        }
+
     def rank(self, text, items, limit=3):
         if type(limit) is not int or limit < 1:
             raise ValueError("Retrieval limit must be a positive integer.")
@@ -97,4 +110,12 @@ class Matcher:
             "pathways": self.model.rank(query, PATHWAYS),
             "message": "Discovery only. Similarities are not probabilities, employability scores or hiring decisions.",
             "no_match": not matches,
+            "diagnostics": {
+                **self.model.diagnostics(query),
+                "skills_without_opportunities": sorted(
+                    skill for skill in skills if not any(skill in row["skills"] for row in OPPORTUNITIES)),
+                "skills_without_pathways": sorted(
+                    skill for skill in skills if not any(skill in row["skills"] for row in PATHWAYS)),
+                "no_match_reason": "No catalogue opportunity met the lexical cutoff." if not matches else None,
+            },
         }

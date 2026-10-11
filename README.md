@@ -103,6 +103,11 @@ python -m unittest discover -s tests -v
 
 `astronomy` is deliberately catalogued without an opportunity or pathway. A no-match response means **catalogue coverage is absent**, not that someone is unsuitable.
 
+Match responses include query diagnostics: known and unknown lexical terms,
+token coverage, selected skills without catalogue opportunities or pathways,
+and a catalogue-specific no-match explanation. A nonempty vector can still
+have no resource match; token coverage is not a confidence or ability measure.
+
 Skill names and evidence IDs must exactly match `catalog`. Empty, duplicate, unknown or sensitive inputs are rejected. Selected evidence must belong to a selected skill. Evidence flags change gap explanations, **never the ranking**.
 
 Training produces inspectable learned IDF weights in an ignored `models` directory. The tiny model is fitted deterministically on startup for CLI and HTTP inference; the persisted file is an audit artifact, not a required runtime dependency. Editing the catalogue intentionally changes its fingerprint and requires regenerating the published evaluation.
