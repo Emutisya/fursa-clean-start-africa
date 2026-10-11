@@ -12,6 +12,7 @@ from .passport import compare_selections, convert_legacy, edit_selections, expor
 from .reporting import compare_reports, read_report
 from .jsonio import read_json
 from .audit import compare_snapshots, model_snapshot, verify_snapshot
+from .diagnostics import doctor
 from .server import make_server
 
 
@@ -19,6 +20,8 @@ def main():
     parser = argparse.ArgumentParser(description="Fursa | synthetic skill-first discovery")
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("catalog")
+    doctor_parser = sub.add_parser("doctor")
+    doctor_parser.add_argument("--output")
     sub.add_parser("skill-map")
     sub.add_parser("inspect")
     term_parser = sub.add_parser("inspect-term")
@@ -134,6 +137,8 @@ def main():
     if args.command == "catalog":
         result = {"skills": list(SKILLS), "evidence": EVIDENCE, "synthetic": True,
                   "human_review_required": True, "catalog_sha256": fingerprint()}
+    elif args.command == "doctor":
+        result = doctor()
     elif args.command == "skill-map":
         result = skill_map()
     elif args.command == "inspect":
@@ -315,6 +320,8 @@ def main():
             if temporary is not None:
                 temporary.unlink(missing_ok=True)
     print(text)
+    if args.command == "doctor" and not result["ready"]:
+        parser.exit(1)
 
 
 if __name__ == "__main__":

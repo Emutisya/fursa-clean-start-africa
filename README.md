@@ -528,6 +528,14 @@ Close the dedicated browser process and server afterward, and remove the ignored
 
 ## Contributing and publication
 
+`python -m fursa doctor` runs bounded offline catalogue integrity, independent
+fit audit, both benchmark arithmetic checks, passport round trip, inference
+boundary fixtures and every simulated evidence-toggle invariant. It emits
+structured pass/failure details and exits 1 if any check fails; `--output` saves
+the diagnostic atomically. Readiness means these prototype consistency checks
+passed, not live server availability, security, fairness, recognized credentials
+or permission to deploy for consequential decisions.
+
 Published at [Emutisya/fursa-clean-start-africa](https://github.com/Emutisya/fursa-clean-start-africa).
 The repository includes GitHub Actions running tests,
 training, reproducible metric comparison and CLI inference on Windows/Linux
