@@ -8,7 +8,7 @@ from .catalog import EVIDENCE, SKILLS
 from .evaluate import evaluate
 from .discovery import browse, compare, detail, related, review_plan, skill_map
 from .model import Matcher
-from .passport import export_passport, read_passport
+from .passport import compare_selections, export_passport, read_passport
 from .server import make_server
 
 
@@ -44,6 +44,9 @@ def main():
     passport_parser.add_argument("--output")
     import_parser = sub.add_parser("import-passport")
     import_parser.add_argument("path")
+    passport_compare = sub.add_parser("compare-passports")
+    passport_compare.add_argument("before")
+    passport_compare.add_argument("after")
     serve = sub.add_parser("serve")
     serve.add_argument("--port", type=int, default=8765)
     args = parser.parse_args()
@@ -109,6 +112,11 @@ def main():
     elif args.command == "import-passport":
         try:
             result = Matcher().match(read_passport(args.path))
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
+    elif args.command == "compare-passports":
+        try:
+            result = compare_selections(read_passport(args.before), read_passport(args.after))
         except (ValueError, OSError) as error:
             parser.error(str(error))
     else:

@@ -2,10 +2,23 @@ import unittest
 import json
 from unittest.mock import patch
 
-from fursa.passport import checksum, export_passport, import_passport
+from fursa.passport import checksum, compare_selections, export_passport, import_passport
 
 
 class PassportTests(unittest.TestCase):
+    def test_comparison_describes_simulation_changes_not_people(self):
+        before = {"skills": ["carpentry"]}
+        evidence_only = compare_selections(before, {"skills": ["carpentry"], "evidence": ["e-carpentry"]})
+        self.assertEqual(evidence_only["evidence_added"], ["e-carpentry"])
+        for row in evidence_only["ranking_changes"]["opportunities"]:
+            self.assertEqual(row["before_rank"], row["after_rank"])
+        changed = compare_selections(before, {"skills": ["welding"]})
+        self.assertEqual(changed["skills_removed"], ["carpentry"])
+        self.assertEqual(changed["skills_added"], ["welding"])
+        ranks = {row["id"]: row for row in changed["ranking_changes"]["opportunities"]}
+        self.assertIsNone(ranks["o-timber"]["after_rank"])
+        self.assertIsNone(ranks["o-metal"]["before_rank"])
+
     def test_import_round_trip_and_rejects_tampering_personal_data_and_stale_catalogue(self):
         body = export_passport({"skills": ["solar"], "evidence": ["e-solar"]})
         raw = json.dumps(body).encode()

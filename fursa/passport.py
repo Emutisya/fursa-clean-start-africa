@@ -3,7 +3,7 @@ import hashlib
 import json
 
 from .catalog import fingerprint
-from .model import validate
+from .model import Matcher, validate
 from .server import unique_fields
 
 SCHEMA = "fursa.synthetic-passport.v1"
@@ -53,3 +53,29 @@ def import_passport(raw):
 def read_passport(path):
     with open(path, "rb") as stream:
         return import_passport(stream.read(MAX_PASSPORT_BYTES + 1))
+
+
+def compare_selections(before, after):
+    old_skills, old_evidence = validate(before)
+    new_skills, new_evidence = validate(after)
+    matcher = Matcher()
+    old = matcher.match({"skills": old_skills, "evidence": old_evidence})
+    new = matcher.match({"skills": new_skills, "evidence": new_evidence})
+    changes = {}
+    for kind in ("opportunities", "pathways"):
+        old_ranks = {row["id"]: index for index, row in enumerate(old[kind], 1)}
+        new_ranks = {row["id"]: index for index, row in enumerate(new[kind], 1)}
+        changes[kind] = [
+            {"id": identifier, "before_rank": old_ranks.get(identifier),
+             "after_rank": new_ranks.get(identifier)}
+            for identifier in sorted(set(old_ranks) | set(new_ranks))
+        ]
+    return {
+        "synthetic": True, "human_review_required": True,
+        "skills_added": sorted(set(new_skills) - set(old_skills)),
+        "skills_removed": sorted(set(old_skills) - set(new_skills)),
+        "evidence_added": sorted(set(new_evidence) - set(old_evidence)),
+        "evidence_removed": sorted(set(old_evidence) - set(new_evidence)),
+        "ranking_changes": changes,
+        "message": "Compare two simulations, not people. Rank changes are lexical, not progress or ability scores.",
+    }

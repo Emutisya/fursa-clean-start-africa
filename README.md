@@ -149,6 +149,11 @@ checksum mismatches and a different catalogue fingerprint. Legacy dashboard
 exports are intentionally not silently converted. Import is local and does not
 upload or store a profile. A stale catalogue requires deliberate review/re-export.
 
+`python -m fursa compare-passports models\before.json models\after.json` validates
+both envelopes and reports selection/evidence differences and before/after
+resource ranks. This compares simulation states, not people, progress or ability.
+Evidence-only changes leave rankings unchanged.
+
 ### Offline catalogue browsing
 
 `python -m fursa browse --kind opportunity --skills "bookkeeping,spreadsheets"`
