@@ -152,11 +152,11 @@ code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text
 <button class="primary" id="submit" type="submit">Explore opportunities</button>
 <div id="status" role="status" aria-live="polite"></div>
 </form>
-<button id="export" type="button">Export synthetic passport</button> <button id="reset" type="button">Reset</button>
+<button id="export" type="button" disabled>Export synthetic passport</button> <button id="reset" type="button">Reset</button>
 </aside>
 <section aria-label="Discovery results">
 <div class="result-head"><div><div class="step">02 / EXPLORE POSSIBILITIES</div><h2>Skills to opportunity</h2><p class="small muted">Catalog similarity, not suitability. Human review is required for every next step.</p></div></div>
-<div id="results"><div class="empty"><h3>Start with what you know.</h3><p class="muted">Choose a preset or build a synthetic skills passport to see ranked, fictional opportunities.</p></div></div>
+<div id="results" aria-busy="false"><div class="empty"><h3>Start with what you know.</h3><p class="muted">Choose a preset or build a synthetic skills passport to see ranked, fictional opportunities.</p></div></div>
 <div class="method"><strong class="small">What is the model actually doing?</strong><p class="small muted">A classical TF-IDF model learns vocabulary and inverse document frequencies from the synthetic skill, opportunity and pathway catalogue. Cosine similarity retrieves overlapping terms. Evidence flags identify missing samples, not eligibility. Similarities are not probabilities.</p><details><summary>Limits &amp; data boundaries</summary><p>Only selected skill names and simulated evidence IDs reach the local backend. No names, offence types, age, gender, nationality, ethnicity, disability or other sensitive attributes are accepted. No data is saved by the server. Your browser holds the current selections until reset or reload.</p><p>These small English-only catalogues are not evidence of fairness, credential recognition, employment outcomes or performance in real communities. Unknown language and uncommon skills can miss opportunities. Ask a human adviser and verify providers independently.</p></details></div>
 </section>
 </div>
@@ -166,6 +166,7 @@ code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text
 "use strict";
 const $ = id => document.getElementById(id);
 let catalog = null, selectedEvidence = new Set(), lastResult = null, requestId = 0;
+let pending = null;
 const presets = {
   workshop: {skills:["carpentry","welding"], evidence:["e-carpentry"]},
   energy: {skills:["solar","electrical"], evidence:[]},
@@ -182,6 +183,10 @@ function skillValues() { return $("skills").value.split(",").map(s => s.trim()).
 function setStatus(text, error=false) { $("status").textContent=text; $("status").className=error?"error":""; }
 function invalidate() {
   requestId++; lastResult=null;
+  if(pending) pending.abort();
+  pending=null;
+  $("export").disabled=true;
+  $("results").setAttribute("aria-busy","false");
   $("submit").disabled=false;
   $("results").replaceChildren(element("div","Selections changed. Explore again to update recommendations.","empty"));
 }
@@ -255,15 +260,18 @@ async function match(event) {
   if (!skills.length || new Set(skills).size!==skills.length || skills.some(s=>!catalog.skills.includes(s))) {
     invalidate(); setStatus("Choose at least one exact catalogued skill, with no duplicates. Do not enter personal details.",true); return;
   }
+  invalidate();
   const id=++requestId; $("submit").disabled=true; setStatus("Running local TF-IDF inference…");
+  $("results").setAttribute("aria-busy","true");
   try {
-    const response=await fetch("/api/match",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({skills,evidence:[...selectedEvidence]})});
+    pending=new AbortController();
+    const response=await fetch("/api/match",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({skills,evidence:[...selectedEvidence]}),signal:AbortSignal.any([pending.signal,AbortSignal.timeout(10000)])});
     const result=await response.json();
     if (!response.ok) throw new Error(result.error || "Inference failed.");
     if (id!==requestId) return;
-    lastResult=result; render(result); setStatus("Local inference complete. All results are synthetic.");
-  } catch(error) { if(id===requestId) setStatus(error.message+" Check that the local server is running.",true); }
-  finally { if(id===requestId) $("submit").disabled=false; }
+    lastResult=result; $("export").disabled=false; render(result); setStatus("Local inference complete. All results are synthetic.");
+  } catch(error) { if(id===requestId) setStatus((error.name==="TimeoutError"?"The local inference request timed out.":error.message)+" Check that the local server is running.",true); }
+  finally { if(id===requestId) { $("submit").disabled=false; pending=null; $("results").setAttribute("aria-busy","false"); } }
 }
 $("form").onsubmit=match;
 $("skills").oninput=()=>{ invalidate(); refresh(); };
@@ -283,10 +291,11 @@ $("export").onclick=()=>{
 (async()=>{
   if(location.protocol==="file:") { setStatus("Open via the local server: python -m fursa serve, then http://127.0.0.1:8765. File preview cannot run Python inference.",true); return; }
   try {
-    const response=await fetch("/api/catalog"); if(!response.ok) throw new Error("Catalogue unavailable");
+    const response=await fetch("/api/catalog",{signal:AbortSignal.timeout(10000)}); if(!response.ok) throw new Error("Catalogue unavailable");
     catalog=await response.json(); refresh(); setStatus("Ready. Choose a synthetic preset or your own catalogue selections.");
   } catch(error) { setStatus("Cannot reach local backend. Run python -m fursa serve.",true); }
 })();
+window.addEventListener("pagehide",()=>{ invalidate(); selectedEvidence.clear(); $("skills").value=""; });
 </script>
 </body>
 </html>

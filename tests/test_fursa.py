@@ -187,6 +187,19 @@ class HttpTests(unittest.TestCase):
         self.assertEqual(self.post({"skills": ["carpentry"]}, Host="example.invalid")[0], 403)
         self.assertEqual(self.request("GET", "/missing")[0], 404)
 
+    def test_stalled_request_returns_timeout_without_breaking_server(self):
+        connection = http.client.HTTPConnection("127.0.0.1", self.server.server_port, timeout=8)
+        try:
+            connection.request("POST", "/api/match", "{}", {
+                "Content-Type": "application/json", "Content-Length": "100",
+            })
+            response = connection.getresponse()
+            self.assertEqual(response.status, 408)
+            self.assertIn("timed out", json.loads(response.read())["error"])
+        finally:
+            connection.close()
+        self.assertEqual(self.request("GET", "/api/health")[0], 200)
+
 
 if __name__ == "__main__":
     unittest.main()
