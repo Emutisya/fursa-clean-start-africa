@@ -365,6 +365,11 @@ Selection validation responses distinguish stable `selection_*` error codes
 recovery route. Invalid JSON/framing uses `request_invalid_input`. Error text
 never echoes rejected names, biographies or other values; no request is retained.
 
+Loopback requests require exactly one Host and at most one Origin header.
+Ambiguous repeated authority/media headers are rejected even when identical.
+JSON media types are case-insensitive; only an optional UTF-8 charset is accepted.
+These local boundaries are not a production-server security certification.
+
 ## Observed synthetic evaluation
 
 See the full recorded run in [`evaluation.json`](evaluation.json), not an aspirational performance claim.

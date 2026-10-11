@@ -43,11 +43,12 @@ def make_server(port=8765):
 
         def allowed(self):
             hosts = {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"}
-            if self.headers.get("Host") not in hosts:
+            if len(self.headers.get_all("Host", [])) != 1 or self.headers.get("Host") not in hosts:
                 self.send(403, {"error": "Loopback Host required."})
                 return False
             origin = self.headers.get("Origin")
-            if origin is not None and origin not in {f"http://{host}" for host in hosts}:
+            if (len(self.headers.get_all("Origin", [])) > 1
+                    or origin is not None and origin not in {f"http://{host}" for host in hosts}):
                 self.send(403, {"error": "Cross-origin requests are not accepted."})
                 return False
             return True
@@ -99,8 +100,10 @@ def make_server(port=8765):
             if urlsplit(self.path).path != "/api/match":
                 self.send(404, {"error": "Not found."})
                 return
-            if self.headers.get("Content-Type", "").split(";")[0].strip() != "application/json":
-                self.send(415, {"error": "Use application/json."})
+            media = [part.strip().lower() for part in self.headers.get("Content-Type", "").split(";")]
+            if (len(self.headers.get_all("Content-Type", [])) != 1 or media[0] != "application/json"
+                    or len(media) > 2 or any(part not in {"charset=utf-8", 'charset="utf-8"'} for part in media[1:])):
+                self.send(415, {"error": "Use one application/json Content-Type with optional charset=utf-8."})
                 return
             try:
                 raw_length = self.headers.get("Content-Length", "")

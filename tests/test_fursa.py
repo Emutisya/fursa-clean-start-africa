@@ -309,6 +309,35 @@ class HttpTests(unittest.TestCase):
                 self.assertNotIn("private", raw.decode())
                 self.assertFalse(result["request_retained"])
 
+    def test_ambiguous_authority_and_media_headers_are_rejected(self):
+        host = f"127.0.0.1:{self.server.server_port}"
+        for header, values, expected in (
+            ("Host", [host, "example.invalid"], 403),
+            ("Origin", [f"http://{host}", f"http://{host}"], 403),
+            ("Content-Type", ["application/json", "application/json"], 415),
+        ):
+            with self.subTest(header=header):
+                conn = http.client.HTTPConnection("127.0.0.1", self.server.server_port, timeout=5)
+                conn.putrequest("POST", "/api/match", skip_host=True)
+                if header != "Host":
+                    conn.putheader("Host", host)
+                for value in values:
+                    conn.putheader(header, value)
+                if header != "Content-Type":
+                    conn.putheader("Content-Type", "application/json")
+                body = b'{"skills":["solar"]}'
+                conn.putheader("Content-Length", str(len(body)))
+                conn.endheaders(body)
+                response = conn.getresponse()
+                self.assertEqual(response.status, expected)
+                response.read()
+                conn.close()
+        self.assertEqual(self.request("POST", "/api/match", '{"skills":["solar"]}',
+                                      {"Content-Type": "Application/JSON; Charset=UTF-8"})[0], 200)
+        self.assertEqual(self.request("POST", "/api/match", '{"skills":["solar"]}',
+                                      {"Content-Type": "application/json; charset=utf-16"})[0], 415)
+        self.assertEqual(self.request("GET", "/api/health")[0], 200)
+
     def test_stalled_request_returns_timeout_without_breaking_server(self):
         connection = http.client.HTTPConnection("127.0.0.1", self.server.server_port, timeout=8)
         try:
