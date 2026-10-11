@@ -56,6 +56,13 @@ try {
   assert.match(await evaluate(`document.getElementById("results").textContent`),/Synthetic carpentry work sample/);
   await evaluate(`document.querySelector('[data-preset="energy"]').click()`);
   await waitFor(`document.getElementById("results").textContent.includes("Solar maintenance") && !document.getElementById("submit").disabled`);
+  await evaluate(`document.querySelector(".match details summary").focus()`);
+  assert.equal(await evaluate(`document.activeElement.tagName`),"SUMMARY");
+  await send("Input.dispatchKeyEvent",{type:"keyDown",key:"Enter",code:"Enter",text:"\r",windowsVirtualKeyCode:13});
+  await send("Input.dispatchKeyEvent",{type:"keyUp",key:"Enter",code:"Enter",windowsVirtualKeyCode:13});
+  await waitFor(`document.querySelector(".match details").open`);
+  assert(await evaluate(`document.querySelectorAll('table[data-contributions="o-solar"] tbody tr').length>6`));
+  assert.equal(await evaluate(`document.querySelector("table th").scope`),"col");
   await evaluate(`document.querySelector('[data-preset="enterprise"]').click()`);
   await waitFor(`document.getElementById("results").textContent.includes("accounts practice") && !document.getElementById("submit").disabled`);
   const downloadPath=process.argv[4] ? resolve(process.argv[4]) : resolve(".browser-check","exports");

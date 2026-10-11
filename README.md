@@ -114,6 +114,11 @@ score; the display similarity remains rounded. The first six terms remain in
 `shared_terms` for compact consumers. These are lexical explanations, not
 causal evidence about a person's abilities.
 
+Dashboard opportunity cards provide keyboard-operable contribution details with
+captioned tables and row/column headers. All lexical terms are inspectable,
+including terms omitted from the compact shared-term list. Values display six
+decimals; any rounding difference does not affect retrieval.
+
 `python -m fursa inspect` prints reproducible fitted vocabulary, IDF and actual
 fit-document frequencies, plus resource vector sizes/norms and corpus provenance.
 This is model inspection, not a new model or an outcome evaluation.

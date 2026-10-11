@@ -109,6 +109,10 @@ input[type="checkbox"] { accent-color:var(--cp-accent); margin-top:5px }
 .match-top { display:flex; align-items:center; justify-content:space-between; gap:12px }
 .rank { color:var(--cp-accent); font-size:12px; font-weight:700 }
 .score { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text-muted); font-size:13px }
+.table-scroll { overflow-x:auto }
+table { border-collapse:collapse; width:100%; font-size:12px }
+caption { text-align:left; margin:8px 0; color:var(--cp-text-muted) }
+th,td { padding:6px; border-bottom:1px solid var(--cp-border); text-align:left }
 .tags { display:flex; flex-wrap:wrap; gap:6px; margin:12px 0 }
 .tag { background:var(--cp-surface-soft); color:var(--cp-text-muted); font-weight:400 }
 .explain { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding-top:16px; border-top:1px solid var(--cp-border) }
@@ -247,7 +251,26 @@ function render(result) {
     const shared=element("div"); shared.append(element("strong","Why it surfaced"),element("p",`Selected skills in common: ${row.shared_skills.join(", ") || "No exact skill overlap; lexical overlap only."}`),element("p",`Shared model terms: ${row.shared_terms.join(", ")}`));
     const gaps=element("div"); gaps.append(element("strong","Evidence to discuss with a human"),element("p",row.evidence_gaps.length?row.evidence_gaps.join("; "):"Selected simulated samples cover the catalogue list. Nothing has been verified."));
     if (row.skills_to_explore.length) gaps.append(element("p",`Skills to explore: ${row.skills_to_explore.join(", ")}. These are not an eligibility ruling.`));
-    explanation.append(shared,gaps); card.append(explanation,element("span","Human review required · No application or offer issued","pill")); container.append(card);
+    explanation.append(shared,gaps); card.append(explanation,element("span","Human review required · No application or offer issued","pill"));
+    if(row.term_contributions?.length) {
+      const details=element("details"), scroll=element("div",undefined,"table-scroll"), table=element("table");
+      details.append(element("summary","Inspect all lexical score contributions"));
+      table.dataset.contributions=row.id;
+      table.append(element("caption","Normalized lexical weight products sum to cosine similarity, not ability or confidence."));
+      const head=element("thead"), heading=element("tr");
+      ["Term","Query weight","Resource weight","Contribution"].forEach(text=>{
+        const cell=element("th",text); cell.scope="col"; heading.append(cell);
+      });
+      head.append(heading); table.append(head);
+      const body=element("tbody");
+      row.term_contributions.forEach(term=>{
+        const line=element("tr"), name=element("th",term.term); name.scope="row"; line.append(name);
+        ["query_weight","resource_weight","cosine_contribution"].forEach(key=>line.append(element("td",term[key].toFixed(6))));
+        body.append(line);
+      });
+      table.append(body); scroll.append(table); details.append(scroll); card.append(details);
+    }
+    container.append(card);
   });
   if (result.pathways.length) {
     container.append(element("div","03 / SIMULATED LEARNING PATHWAYS","step"),element("h3","Turn experience into reviewable evidence"),element("p","These are illustrative steps, not accredited courses or credential awards.","small muted"));
