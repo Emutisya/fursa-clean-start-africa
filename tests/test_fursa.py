@@ -380,6 +380,29 @@ class HttpTests(unittest.TestCase):
                                       {"Content-Type": "application/json; charset=utf-16"})[0], 415)
         self.assertEqual(self.request("GET", "/api/health")[0], 200)
 
+    def test_head_preserves_get_headers_without_body_and_method_errors_are_actionable(self):
+        for path in ("/", "/api/health", "/api/catalog", "/api/resources/o-solar"):
+            _, body = self.request("GET", path)
+            conn = http.client.HTTPConnection("127.0.0.1", self.server.server_port, timeout=5)
+            conn.request("HEAD", path)
+            response = conn.getresponse()
+            self.assertEqual(response.status, 200)
+            self.assertEqual(int(response.getheader("Content-Length")), len(body))
+            self.assertEqual(response.read(), b"")
+            conn.close()
+        for method, path, allowed in (("POST", "/api/health", "GET, HEAD"),
+                                      ("DELETE", "/api/match", "POST"),
+                                      ("OPTIONS", "/api/catalog", "GET, HEAD")):
+            conn = http.client.HTTPConnection("127.0.0.1", self.server.server_port, timeout=5)
+            conn.request(method, path)
+            response = conn.getresponse()
+            self.assertEqual(response.status, 405)
+            self.assertEqual(response.getheader("Allow"), allowed)
+            self.assertEqual(json.loads(response.read())["error_code"], "request_method_not_allowed")
+            conn.close()
+        self.assertEqual(self.request("HEAD", "/api/health", headers={"Host": "example.invalid"})[0], 403)
+        self.assertEqual(self.request("PUT", "/missing")[0], 404)
+
     def test_stalled_request_returns_timeout_without_breaking_server(self):
         connection = http.client.HTTPConnection("127.0.0.1", self.server.server_port, timeout=8)
         try:

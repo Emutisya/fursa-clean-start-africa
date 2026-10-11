@@ -394,6 +394,11 @@ handler threads. Excess connections receive 503 `server_busy` with `Retry-After:
 1`; disconnects/timeouts release capacity. This bounded localhost resource guard
 is not a production admission-control or denial-of-service guarantee.
 
+Read-only routes support HEAD with the same status/content headers as GET and
+no body. Wrong methods on known routes return JSON 405 with `Allow` and
+`request_method_not_allowed`; unknown routes stay 404. OPTIONS does not grant
+CORS permission. Host/origin checks still run before these method responses.
+
 ## Observed synthetic evaluation
 
 See the full recorded run in [`evaluation.json`](evaluation.json), not an aspirational performance claim.

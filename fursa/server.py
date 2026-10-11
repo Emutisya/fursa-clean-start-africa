@@ -33,7 +33,7 @@ def make_server(port=8765, max_connections=8):
         def log_message(self, format, *args):
             pass
 
-        def send(self, status, body, content_type="application/json"):
+        def send(self, status, body, content_type="application/json", headers=None):
             data = json.dumps(body).encode() if content_type == "application/json" else body
             self.send_response(status)
             self.send_header("Content-Type", content_type + "; charset=utf-8")
@@ -41,8 +41,11 @@ def make_server(port=8765, max_connections=8):
             self.send_header("Cache-Control", "no-store")
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("Content-Security-Policy", "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'")
+            for name, value in (headers or {}).items():
+                self.send_header(name, value)
             self.end_headers()
-            self.wfile.write(data)
+            if self.command != "HEAD":
+                self.wfile.write(data)
 
         def allowed(self):
             hosts = {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"}
@@ -70,6 +73,8 @@ def make_server(port=8765, max_connections=8):
                                 "pathway_ids": [row["id"] for row in PATHWAYS]})
             elif path == "/api/health":
                 self.send(200, {"status": "ok", "model": "learned-tfidf", "synthetic": True})
+            elif path == "/api/match":
+                self.method_not_allowed()
             elif path == "/api/skills":
                 self.send(200, skill_map())
             elif path in {"/api/resources", "/api/compare"}:
@@ -99,11 +104,35 @@ def make_server(port=8765, max_connections=8):
             else:
                 self.send(404, {"error": "Not found."})
 
+        def do_HEAD(self):
+            self.do_GET()
+
+        def method_not_allowed(self):
+            if not self.allowed():
+                return
+            path = urlsplit(self.path).path
+            if path == "/api/match":
+                allowed = "POST"
+            elif path in {"/", "/api/catalog", "/api/health", "/api/skills", "/api/resources", "/api/compare"} or path.startswith("/api/resources/"):
+                allowed = "GET, HEAD"
+            else:
+                self.send(404, {"error": "Not found."})
+                return
+            self.send(405, {"error": "This route does not accept this method. Use the Allow header.",
+                            "error_code": "request_method_not_allowed"}, headers={"Allow": allowed})
+
+        do_PUT = method_not_allowed
+        do_DELETE = method_not_allowed
+        do_PATCH = method_not_allowed
+        do_OPTIONS = method_not_allowed
+        do_TRACE = method_not_allowed
+        do_CONNECT = method_not_allowed
+
         def do_POST(self):
             if not self.allowed():
                 return
             if urlsplit(self.path).path != "/api/match":
-                self.send(404, {"error": "Not found."})
+                self.method_not_allowed()
                 return
             media = [part.strip().lower() for part in self.headers.get("Content-Type", "").split(";")]
             if (len(self.headers.get_all("Content-Type", [])) != 1 or media[0] != "application/json"
