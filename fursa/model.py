@@ -235,6 +235,29 @@ class Matcher:
             "message": "Synthetic evidence-toggle invariance audit. Gap changes never verify evidence or competence.",
         }
 
+    def overlap_review(self, payload):
+        skills, _ = validate(payload)
+        result = self.match(payload)
+        query = " ".join(SKILLS[skill] for skill in skills)
+        reviews = {}
+        for kind, resources in (("opportunities", OPPORTUNITIES), ("pathways", PATHWAYS)):
+            visible = {row["id"] for row in result[kind]}
+            scores = {row["id"]: row for row in self.model.audit(query, resources)}
+            reviews[kind] = {
+                "lexical_only_returned": sorted(row["id"] for row in result[kind] if not row["shared_skills"]),
+                "declared_overlap": [
+                    {"id": row["id"], "shared_skills": sorted(set(skills) & set(row["skills"])),
+                     "returned": row["id"] in visible,
+                     "not_returned_reason": None if row["id"] in visible else
+                         "outside_top_three" if scores[row["id"]]["passes_cutoff"] else "below_lexical_cutoff"}
+                    for row in sorted(resources, key=lambda row: row["id"]) if set(skills) & set(row["skills"])
+                ],
+            }
+        return {
+            "synthetic": True, "human_review_required": True, "reviews": reviews,
+            "message": "Declared catalogue overlap versus lexical retrieval, not relevance ground truth, verified skill or eligibility.",
+        }
+
     def match(self, payload, limit=3):
         from .passport import export_passport
 

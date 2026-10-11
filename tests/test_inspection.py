@@ -2,11 +2,23 @@ import unittest
 from copy import deepcopy
 from unittest.mock import patch
 
-from fursa.catalog import EVIDENCE, corpus, fingerprint
+from fursa.catalog import EVIDENCE, SKILLS, corpus, fingerprint
 from fursa.model import Matcher, Tfidf, tokens
 
 
 class InspectionTests(unittest.TestCase):
+    def test_overlap_review_distinguishes_lexical_only_suggestions_from_catalogue_associations(self):
+        report = Matcher().overlap_review({"skills": ["customer service"]})
+        opportunities = report["reviews"]["opportunities"]
+        self.assertEqual(opportunities["lexical_only_returned"], ["o-nursery"])
+        self.assertEqual([row["id"] for row in opportunities["declared_overlap"]], ["o-dispatch"])
+        self.assertTrue(opportunities["declared_overlap"][0]["returned"])
+        broad = Matcher().overlap_review({"skills": list(SKILLS)})
+        self.assertTrue(any(row["not_returned_reason"] == "outside_top_three"
+                            for row in broad["reviews"]["opportunities"]["declared_overlap"]))
+        empty = Matcher().overlap_review({"skills": ["astronomy"]})
+        self.assertEqual(empty["reviews"]["opportunities"]["declared_overlap"], [])
+
     def test_pathway_overlap_and_gap_explanations_follow_selections_not_ranking(self):
         matcher = Matcher()
         result = matcher.match({"skills": ["solar", "electrical"], "evidence": ["e-solar"]})

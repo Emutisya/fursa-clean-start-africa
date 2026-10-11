@@ -318,6 +318,12 @@ both resource rankings/scores/contributions and lists gap-explanation changes.
 The invariant is observed rather than assumed. No sample becomes verified;
 an unsupported skill with no samples produces an empty scenario list.
 
+`python -m fursa overlap-review --skills "customer service"` contrasts all
+declared catalogue skill associations with current lexical retrieval, identifying
+lexical-only returned resources and overlaps omitted by cutoff/depth. Generic
+words can retrieve a resource without declared skill overlap. Associations are
+not ground-truth relevance, verified competence or eligibility.
+
 ```text
 Single-file HTML / Python CLI
           |
