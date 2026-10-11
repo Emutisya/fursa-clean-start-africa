@@ -132,6 +132,16 @@ For POSIX systems, use `models/tfidf.json` in the training command instead. All 
 
 ## Experience and architecture
 
+### Portable synthetic selections
+
+`python -m fursa passport --skills "solar,electrical" --evidence e-solar --output models\passport.json`
+atomically exports the versioned `fursa.synthetic-passport.v1` envelope with
+canonical sorted selections, explicit unverified/synthetic/human-review flags,
+catalogue fingerprint and a canonical content checksum. There are no names,
+identifiers for people, artifacts or issuer claims. Checksums detect accidental
+changes; they are not signatures, authentication or recognized credentials.
+The dashboard's existing simple export remains a separate legacy format.
+
 ### Offline catalogue browsing
 
 `python -m fursa browse --kind opportunity --skills "bookkeeping,spreadsheets"`

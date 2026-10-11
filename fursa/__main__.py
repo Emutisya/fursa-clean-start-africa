@@ -8,6 +8,7 @@ from .catalog import EVIDENCE, SKILLS
 from .evaluate import evaluate
 from .discovery import browse, compare, detail, related, review_plan, skill_map
 from .model import Matcher
+from .passport import export_passport
 from .server import make_server
 
 
@@ -37,6 +38,10 @@ def main():
     match = sub.add_parser("match")
     match.add_argument("--skills", required=True, help="Comma-separated exact catalogued skills")
     match.add_argument("--evidence", default="", help="Comma-separated simulated evidence IDs")
+    passport_parser = sub.add_parser("passport")
+    passport_parser.add_argument("--skills", required=True)
+    passport_parser.add_argument("--evidence", default="")
+    passport_parser.add_argument("--output")
     serve = sub.add_parser("serve")
     serve.add_argument("--port", type=int, default=8765)
     args = parser.parse_args()
@@ -101,9 +106,10 @@ def main():
         result = evaluate()
     else:
         try:
-            result = Matcher().match({
+            payload = {
                 "skills": [s.strip() for s in args.skills.split(",") if s.strip()],
-                "evidence": [s.strip() for s in args.evidence.split(",") if s.strip()]})
+                "evidence": [s.strip() for s in args.evidence.split(",") if s.strip()]}
+            result = export_passport(payload) if args.command == "passport" else Matcher().match(payload)
         except ValueError as error:
             parser.error(str(error))
     text = json.dumps(result, indent=2)
