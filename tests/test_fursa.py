@@ -128,6 +128,14 @@ class ModelTests(unittest.TestCase):
         with patch("fursa.evaluate.CASES", [*CASES, leaked]), self.assertRaisesRegex(ValueError, "training/evaluation"):
             evaluate()
 
+    def test_malformed_evaluation_cases_report_schema_errors(self):
+        for case in (None, [], ("id",), (None, "timber", set()), ([], "timber", set()),
+                     ("id", None, set()), ("id", "123", set()), ("id", "timber", []),
+                     ("id", "timber", {1})):
+            with self.subTest(case=case), patch("fursa.evaluate.CASES", [*CASES, case]):
+                with self.assertRaisesRegex(ValueError, "Evaluation cases require"):
+                    evaluate()
+
     def test_consumers_cannot_mutate_catalogs_through_match_results(self):
         expected = self.matcher.match({"skills": ["carpentry"]})
         result = self.matcher.match({"skills": ["carpentry"]})

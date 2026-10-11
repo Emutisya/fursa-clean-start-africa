@@ -26,6 +26,14 @@ CASES = [
 def evaluate():
     training = corpus()
     canonical = lambda text: tuple(sorted(Counter(tokens(text)).items()))
+    if (not isinstance(CASES, (list, tuple)) or any(
+            not isinstance(case, (list, tuple)) or len(case) != 3
+            or not isinstance(case[0], str) or not case[0].strip()
+            or not isinstance(case[1], str) or not tokens(case[1])
+            or not isinstance(case[2], (set, frozenset))
+            or any(not isinstance(identifier, str) for identifier in case[2])
+            for case in CASES)):
+        raise ValueError("Evaluation cases require an ID, usable query text and a set of resource IDs.")
     if not CASES or not any(relevant for _, _, relevant in CASES) or not any(not relevant for _, _, relevant in CASES):
         raise ValueError("Evaluation requires both relevant and unmatched queries.")
     ids = [identifier for identifier, _, _ in CASES]
