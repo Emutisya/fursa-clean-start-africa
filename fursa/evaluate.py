@@ -251,3 +251,33 @@ def baseline_comparison():
         "controls": summaries,
         "message": "Simple synthetic lexical controls, not independently validated alternatives or outcome comparisons.",
     }
+
+
+def inspect_case(identifier, kind="opportunity"):
+    report = evaluate(kind)
+    case = next((row for row in report["cases"] if row["id"] == identifier), None)
+    if case is None:
+        raise ValueError("Use an exact case ID from the chosen synthetic evaluation report.")
+    resources = OPPORTUNITIES if kind == "opportunity" else PATHWAYS
+    model = Tfidf(corpus())
+    vector = model.vector(case["query"])
+    scores = model.audit(case["query"], resources)
+    return {
+        "synthetic": True, "human_review_required": True, "case": case,
+        "query_terms": [
+            {"term": term, "count": count, "fitted_idf": model.idf.get(term),
+             "normalized_weight": vector.get(term, 0)}
+            for term, count in sorted(Counter(tokens(case["query"])).items())
+        ],
+        "resource_scores": [
+            {**row, "manually_labelled_relevant": row["id"] in case["relevant"],
+             "disposition": (
+                 "returned" if row["id"] in case["ranked"] else
+                 "no_fitted_query_terms" if not vector else
+                 "below_lexical_cutoff" if not row["passes_cutoff"] else "outside_top_three"
+             )}
+            for row in scores
+        ],
+        "corpus_sha256": report["corpus_sha256"], "benchmark_sha256": report["benchmark_sha256"],
+        "message": "Inspect one authored synthetic benchmark query, not an individual or real evidence.",
+    }

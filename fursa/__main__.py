@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 
 from .catalog import EVIDENCE, SKILLS
-from .evaluate import baseline_comparison, cutoff_diagnostics, evaluate, evaluation_slices, ranking_curves
+from .evaluate import baseline_comparison, cutoff_diagnostics, evaluate, evaluation_slices, inspect_case, ranking_curves
 from .discovery import browse, compare, detail, preview_additions, related, review_plan, skill_map
 from .model import Matcher
 from .passport import compare_selections, convert_legacy, edit_selections, export_passport, merge_selections, read_passport
@@ -54,6 +54,9 @@ def main():
     slices_parser.add_argument("--output")
     baselines_parser = sub.add_parser("evaluation-baselines")
     baselines_parser.add_argument("--output")
+    case_parser = sub.add_parser("inspect-case")
+    case_parser.add_argument("id")
+    case_parser.add_argument("--kind", choices=["opportunity", "pathway"], default="opportunity")
     evaluation_compare = sub.add_parser("compare-evaluations")
     evaluation_compare.add_argument("before")
     evaluation_compare.add_argument("after")
@@ -175,6 +178,11 @@ def main():
         result = evaluation_slices()
     elif args.command == "evaluation-baselines":
         result = baseline_comparison()
+    elif args.command == "inspect-case":
+        try:
+            result = inspect_case(args.id, args.kind)
+        except ValueError as error:
+            parser.error(str(error))
     elif args.command == "compare-evaluations":
         try:
             result = compare_reports(read_report(args.before), read_report(args.after))

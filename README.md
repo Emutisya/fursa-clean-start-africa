@@ -356,6 +356,12 @@ negative cases and one synonym-only failure. Labels describe catalogue relevance
 not accredited providers, assessment success or credential eligibility. Reports
 identify their resource kind and separate benchmark provenance.
 
+`python -m fursa inspect-case q13` (or `inspect-case p15 --kind pathway`) drills
+into an exact authored case: token counts/IDF/vector weights, every resource's
+full-precision cosine, manual relevance and whether it was returned, outside
+top three, below cutoff or blocked by an empty vocabulary vector. Arbitrary
+free-text queries are not accepted by this diagnostic command.
+
 ### Optional real-browser smoke test
 
 Recorded evaluation cases include known/unknown term coverage, missed relevant

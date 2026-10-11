@@ -2,11 +2,24 @@ import unittest
 from copy import deepcopy
 from unittest.mock import patch
 
-from fursa.evaluate import baseline_comparison, cutoff_diagnostics, evaluate, evaluation_slices, ranking_curves
+from fursa.evaluate import baseline_comparison, cutoff_diagnostics, evaluate, evaluation_slices, inspect_case, ranking_curves
 from fursa.reporting import compare_reports
 
 
 class EvaluationToolsTests(unittest.TestCase):
+    def test_case_inspection_distinguishes_empty_vocabulary_and_cutoff_rejections(self):
+        failure = inspect_case("q13")
+        self.assertTrue(all(row["fitted_idf"] is None for row in failure["query_terms"]))
+        self.assertTrue(all(row["disposition"] == "no_fitted_query_terms" for row in failure["resource_scores"]))
+        success = inspect_case("q01")
+        timber = next(row for row in success["resource_scores"] if row["id"] == "o-timber")
+        self.assertEqual(timber["disposition"], "returned")
+        self.assertTrue(timber["manually_labelled_relevant"])
+        self.assertTrue(any(row["disposition"] == "below_lexical_cutoff" for row in success["resource_scores"]))
+        self.assertEqual(inspect_case("p15", "pathway")["case"]["ranked"], [])
+        with self.assertRaises(ValueError):
+            inspect_case("unbounded biography")
+
     def test_pathway_benchmark_covers_every_pathway_and_keeps_synonym_failure(self):
         report = evaluate("pathway")
         self.assertEqual(report, evaluate("pathway"))
