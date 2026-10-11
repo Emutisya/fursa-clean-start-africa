@@ -370,6 +370,11 @@ Ambiguous repeated authority/media headers are rejected even when identical.
 JSON media types are case-insensitive; only an optional UTF-8 charset is accepted.
 These local boundaries are not a production-server security certification.
 
+The local demo caps active connections at eight rather than creating unlimited
+handler threads. Excess connections receive 503 `server_busy` with `Retry-After:
+1`; disconnects/timeouts release capacity. This bounded localhost resource guard
+is not a production admission-control or denial-of-service guarantee.
+
 ## Observed synthetic evaluation
 
 See the full recorded run in [`evaluation.json`](evaluation.json), not an aspirational performance claim.

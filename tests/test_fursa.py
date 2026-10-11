@@ -8,6 +8,7 @@ import socket
 import subprocess
 import sys
 import threading
+import time
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -248,6 +249,47 @@ class HttpTests(unittest.TestCase):
         status, raw = self.post({"skills": ["solar", "electrical"], "evidence": []})
         self.assertEqual(status, 200)
         self.assertEqual(json.loads(raw)["opportunities"][0]["id"], "o-solar")
+
+    def test_connection_capacity_rejects_overload_and_recovers_after_disconnect(self):
+        server = make_server(0, max_connections=1)
+        started = threading.Event()
+        original = server.RequestHandlerClass.setup
+        def setup(handler):
+            original(handler)
+            started.set()
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        held = None
+        try:
+            with patch.object(server.RequestHandlerClass, "setup", setup):
+                held = socket.create_connection(("127.0.0.1", server.server_port), timeout=5)
+                self.assertTrue(started.wait(2))
+                conn = http.client.HTTPConnection("127.0.0.1", server.server_port, timeout=5)
+                conn.request("GET", "/api/health")
+                response = conn.getresponse()
+                self.assertEqual(response.status, 503)
+                self.assertEqual(response.getheader("Retry-After"), "1")
+                self.assertEqual(json.loads(response.read())["error_code"], "server_busy")
+                conn.close()
+                held.close()
+                held = None
+                for _ in range(20):
+                    conn = http.client.HTTPConnection("127.0.0.1", server.server_port, timeout=5)
+                    conn.request("GET", "/api/health")
+                    response = conn.getresponse()
+                    status = response.status
+                    response.read()
+                    conn.close()
+                    if status == 200:
+                        break
+                    time.sleep(.05)
+                self.assertEqual(status, 200)
+        finally:
+            if held is not None:
+                held.close()
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=5)
 
     def test_read_only_discovery_routes_use_bounded_filters_and_comparisons(self):
         status, raw = self.request("GET", "/api/resources?skill=bookkeeping&skill=spreadsheets")
