@@ -1,5 +1,7 @@
 import argparse
 import json
+import os
+import tempfile
 from pathlib import Path
 
 from .catalog import EVIDENCE, SKILLS
@@ -60,11 +62,19 @@ def main():
     output = getattr(args, "output", None)
     if output:
         path = Path(output)
+        temporary = None
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(text + "\n", encoding="utf-8")
+            with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=path.parent,
+                                             prefix=f".{path.name}.", suffix=".tmp", delete=False) as stream:
+                temporary = Path(stream.name)
+                stream.write(text + "\n")
+            os.replace(temporary, path)
         except OSError as error:
             parser.exit(2, f"Error: Could not write output to {path}. Check the destination and permissions. ({error})\n")
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
     print(text)
 
 

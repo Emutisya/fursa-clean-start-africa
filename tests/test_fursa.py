@@ -19,6 +19,21 @@ from fursa.server import make_server
 
 
 class CLITests(unittest.TestCase):
+    def test_failed_output_replacement_preserves_existing_report(self):
+        from fursa.__main__ import main
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "evaluation.json"
+            path.write_text('{"previous": true}', encoding="utf-8")
+            errors = io.StringIO()
+            with patch.object(sys, "argv", ["fursa", "evaluate", "--output", str(path)]), \
+                    patch("fursa.__main__.os.replace", side_effect=PermissionError("Isolated write failure")), \
+                    redirect_stderr(errors), self.assertRaises(SystemExit) as caught:
+                main()
+            self.assertEqual(caught.exception.code, 2)
+            self.assertIn("Could not write output", errors.getvalue())
+            self.assertEqual(json.loads(path.read_text(encoding="utf-8")), {"previous": True})
+            self.assertEqual(list(Path(directory).glob("*.tmp")), [])
+
     def test_output_path_failures_are_actionable_and_do_not_claim_success(self):
         with tempfile.TemporaryDirectory() as directory:
             target = Path(directory) / "blocked"
