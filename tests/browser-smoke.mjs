@@ -1,7 +1,7 @@
 // Optional real-browser checks via an already running local Edge/Chromium CDP.
 // Node 22+ only; no npm packages. See README for the two local endpoints.
 import assert from "node:assert/strict";
-import {mkdir, readFile, unlink} from "node:fs/promises";
+import {mkdir, readFile, unlink, writeFile} from "node:fs/promises";
 import {resolve} from "node:path";
 import {execFile} from "node:child_process";
 import {promisify} from "node:util";
@@ -99,6 +99,31 @@ try {
   assert.deepEqual(passport.skills,["bookkeeping","customer service","spreadsheets"]);
   const imported=await promisify(execFile)("python",["-m","fursa","import-passport",exportFile],{timeout:10000});
   assert.equal(JSON.parse(imported.stdout).opportunities[0].id,"o-accounts");
+  await evaluate(`document.getElementById("reset").click(); window.importRequests=0; window.importFetch=window.fetch;
+    window.fetch=(...args)=>{window.importRequests++;return window.importFetch(...args);}`);
+  const tree=await send("DOM.getDocument");
+  const upload=await send("DOM.querySelector",{nodeId:tree.root.nodeId,selector:"#passport-import"});
+  await send("DOM.setFileInputFiles",{nodeId:upload.nodeId,files:[exportFile]});
+  await waitFor(`document.getElementById("status").textContent.includes("Validated unverified")`);
+  assert.equal(await evaluate(`document.getElementById("skills").value`),"bookkeeping, customer service, spreadsheets");
+  assert.equal(await evaluate(`window.importRequests`),0);
+  assert.equal(await evaluate(`document.getElementById("export").disabled`),true);
+  const invalidPassports=[
+    JSON.stringify({...passport,name:"synthetic rejected field"}),
+    JSON.stringify(passport).replace('"synthetic":true','"synthetic":false,"synthetic":true'),
+    Buffer.from([255,254,0])
+  ];
+  for(let index=0;index<invalidPassports.length;index++) {
+    const invalidFile=resolve(downloadPath,`invalid-passport-${index}.json`);
+    await writeFile(invalidFile,invalidPassports[index],{flag:"wx"});
+    await evaluate(`document.getElementById("status").textContent=""`);
+    await send("DOM.setFileInputFiles",{nodeId:upload.nodeId,files:[invalidFile]});
+    await waitFor(`document.getElementById("status").textContent.includes("Cannot import")`);
+    assert.equal(await evaluate(`document.getElementById("skills").value`),"bookkeeping, customer service, spreadsheets");
+    assert.equal(await evaluate(`window.importRequests`),0);
+    await unlink(invalidFile);
+  }
+  await evaluate(`window.fetch=window.importFetch`);
   await unlink(exportFile);
   await evaluate(`document.querySelector('[data-preset="unmatched"]').click()`);
   await waitFor(`document.getElementById("results").textContent.includes("No relevant catalogue match")`);

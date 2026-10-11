@@ -4,7 +4,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from .catalog import EVIDENCE, SKILLS
+from .catalog import EVIDENCE, SKILLS, fingerprint
 from .model import Matcher, SelectionError
 from .discovery import browse, compare, detail, skill_map
 from .jsonio import unique_fields
@@ -60,7 +60,8 @@ def make_server(port=8765):
             if path == "/":
                 self.send(200, HTML.read_bytes(), "text/html")
             elif path == "/api/catalog":
-                self.send(200, {"skills": list(SKILLS), "evidence": EVIDENCE, "synthetic": True})
+                self.send(200, {"skills": list(SKILLS), "evidence": EVIDENCE, "synthetic": True,
+                                "catalog_sha256": fingerprint()})
             elif path == "/api/health":
                 self.send(200, {"status": "ok", "model": "learned-tfidf", "synthetic": True})
             elif path == "/api/skills":

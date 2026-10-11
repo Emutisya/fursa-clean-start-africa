@@ -106,6 +106,7 @@ dialog { color:var(--cp-text); background:var(--cp-surface); border:1px solid va
 dialog::backdrop { background:var(--cp-overlay) }
 .evidence label { display:flex; gap:8px; align-items:start; font-weight:400; margin:8px 0 }
 input[type="checkbox"] { accent-color:var(--cp-accent); margin-top:5px }
+input[type="file"] { max-width:100% }
 .divider { border:0; border-top:1px solid var(--cp-border); margin:24px 0 }
 .passport { background:var(--cp-bg-elevated); border:1px dashed var(--cp-border-strong); padding:16px; border-radius:10px; margin:20px 0 }
 .passport p { margin:4px 0 12px }
@@ -172,6 +173,9 @@ code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text
 </form>
 <button id="export" type="button" disabled>Export synthetic passport</button> <button id="reset" type="button">Reset</button>
 <p><button id="print-review" type="button" disabled>Print human-review discussion summary</button></p>
+<label for="passport-import">Import a versioned synthetic passport locally</label>
+<input id="passport-import" type="file" accept=".json,application/json" aria-describedby="import-help">
+<p id="import-help" class="small muted">Only bounded unverified Fursa JSON, maximum 16 KiB. No file is uploaded. Explore separately after validation.</p>
 </aside>
 <section aria-label="Discovery results">
 <div class="result-head"><div><div class="step">02 / EXPLORE POSSIBILITIES</div><h2>Skills to opportunity</h2><p class="small muted">Catalog similarity, not suitability. Human review is required for every next step.</p></div></div>
@@ -204,6 +208,7 @@ let browseId=0, browsePending=null;
 let detailId=0, detailPending=null, detailOpener=null;
 const comparison=new Set(), resourceTitles=new Map();
 let compareId=0, comparePending=null;
+let importId=0;
 const presets = {
   workshop: {skills:["carpentry","welding"], evidence:["e-carpentry"]},
   energy: {skills:["solar","electrical"], evidence:[]},
@@ -347,7 +352,7 @@ $("resource-dialog").addEventListener("close",()=>{
 });
 function setStatus(text, error=false) { $("status").textContent=text; $("status").className=error?"error":""; }
 function invalidate() {
-  requestId++; lastResult=null;
+  requestId++; importId++; lastResult=null;
   if(pending) pending.abort();
   pending=null;
   $("export").disabled=true;
@@ -550,6 +555,34 @@ $("print-review").onclick=()=>{
   window.print();
 };
 window.addEventListener("afterprint",()=>$("review-print").replaceChildren());
+$("passport-import").onchange=async()=>{
+  const file=$("passport-import").files[0]; if(!file) return;
+  const id=++importId;
+  try {
+    if(!catalog || file.size<1 || file.size>16384) throw new Error("Bounded passport required.");
+    const text=new TextDecoder("utf-8",{fatal:true,ignoreBOM:true}).decode(await file.arrayBuffer());
+    const body=JSON.parse(text), fields=["schema","synthetic","human_review_required","verification","catalog_sha256","skills","evidence","content_sha256"];
+    if(!body || Array.isArray(body) || Object.keys(body).sort().join("|")!==fields.sort().join("|")) throw new Error("Wrong schema.");
+    if(body.schema!=="fursa.synthetic-passport.v1" || body.synthetic!==true || body.human_review_required!==true || body.verification!=="Unverified synthetic selections") throw new Error("Safety flags required.");
+    if(!Array.isArray(body.skills) || !body.skills.length || body.skills.length>catalog.skills.length || new Set(body.skills).size!==body.skills.length || body.skills.some(skill=>typeof skill!=="string" || !catalog.skills.includes(skill))) throw new Error("Invalid skills.");
+    if(!Array.isArray(body.evidence) || body.evidence.length>catalog.evidence.length || new Set(body.evidence).size!==body.evidence.length || body.evidence.some(identifier=>typeof identifier!=="string" || !catalog.evidence.some(row=>row.id===identifier && body.skills.includes(row.skill)))) throw new Error("Invalid simulated evidence.");
+    if(JSON.stringify(body.skills)!==JSON.stringify([...body.skills].sort()) || JSON.stringify(body.evidence)!==JSON.stringify([...body.evidence].sort())) throw new Error("Canonical order required.");
+    const keys=[...text.matchAll(/"((?:\\.|[^"\\])*)"\s*:/g)].map(match=>JSON.parse('"'+match[1]+'"'));
+    if(keys.length!==fields.length || new Set(keys).size!==keys.length) throw new Error("Duplicate fields.");
+    if(body.catalog_sha256!==catalog.catalog_sha256) throw new Error("Different catalogue.");
+    const unsigned=Object.fromEntries(Object.keys(body).filter(key=>key!=="content_sha256").sort().map(key=>[key,body[key]]));
+    const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(JSON.stringify(unsigned)));
+    const checksum=[...new Uint8Array(digest)].map(value=>value.toString(16).padStart(2,"0")).join("");
+    if(body.content_sha256!==checksum) throw new Error("Checksum mismatch.");
+    if(id!==importId) return;
+    invalidate(); $("skills").value=body.skills.join(", "); selectedEvidence=new Set(body.evidence); refresh();
+    setStatus("Validated unverified synthetic selections locally. Explore separately; no file was uploaded.");
+  } catch(error) {
+    if(id===importId) setStatus("Cannot import: use a current unverified versioned synthetic passport with valid UTF-8, checksum and no extra or duplicate fields. Existing selections kept.",true);
+  } finally {
+    $("passport-import").value="";
+  }
+};
 (async()=>{
   if(location.protocol==="file:") { setStatus("Open via the local server: python -m fursa serve, then http://127.0.0.1:8765. File preview cannot run Python inference.",true); return; }
   try {
