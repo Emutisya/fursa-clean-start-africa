@@ -103,3 +103,32 @@ def evaluate():
         "cases": rows,
         "resource_coverage": coverage,
     }
+
+
+def ranking_curves():
+    baseline = evaluate()
+    model = Tfidf(corpus())
+    predictions = [(relevant, [row["id"] for row in model.rank(query, OPPORTUNITIES, len(OPPORTUNITIES))])
+                   for _, query, relevant in CASES]
+    positive = [(relevant, ranked) for relevant, ranked in predictions if relevant]
+    curves = []
+    for k in range(1, len(OPPORTUNITIES) + 1):
+        recalls, precisions, gains = [], [], []
+        for relevant, ranked in positive:
+            hits = len(set(ranked[:k]) & relevant)
+            recalls.append(hits / len(relevant))
+            precisions.append(hits / k)
+            ideal = sum(1 / math.log2(i + 2) for i in range(min(k, len(relevant))))
+            gains.append(sum(1 / math.log2(i + 2) for i, identifier in enumerate(ranked[:k])
+                             if identifier in relevant) / ideal)
+        curves.append({
+            "k": k, "mean_recall": sum(recalls) / len(recalls),
+            "mean_precision": sum(precisions) / len(precisions),
+            "mean_ndcg": sum(gains) / len(gains),
+        })
+    return {
+        "synthetic": True, "human_review_required": True,
+        "corpus_sha256": baseline["corpus_sha256"], "benchmark_sha256": baseline["benchmark_sha256"],
+        "positive_cases": len(positive), "curves": curves,
+        "message": "Synthetic positive-query depth diagnostics at the unchanged cutoff, not outcome estimates.",
+    }

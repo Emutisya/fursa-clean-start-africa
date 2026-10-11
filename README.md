@@ -291,6 +291,12 @@ Inputs are limited to one MiB of strict UTF-8 JSON. Corpus changes
 are flagged rather than hidden. Deltas are not statistical significance or
 evidence of real-user improvement; optional `--output` saves the comparison.
 
+`python -m fursa evaluation-curves` reports positive-query recall, precision
+and NDCG for every catalogue depth from 1 through 9 at the unchanged cutoff.
+Precision divides by requested depth even when fewer rows survive. Depth three
+reproduces published metrics; deeper views do not repair missing vocabulary.
+Use `--output models\curves.json` to save this separate diagnostic artifact.
+
 The application does not need Node or a browser automation package. If Node 22+ and Edge are already installed, the included CDP smoke test can exercise actual HTTP-backed presets, evidence changes, no-match, validation, reset, responsive layout and themes.
 
 In one PowerShell window, run `python -m fursa serve --port 8769`. In another, from this project directory:

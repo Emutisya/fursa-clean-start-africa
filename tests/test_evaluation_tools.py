@@ -2,11 +2,22 @@ import unittest
 from copy import deepcopy
 from unittest.mock import patch
 
-from fursa.evaluate import evaluate
+from fursa.evaluate import evaluate, ranking_curves
 from fursa.reporting import compare_reports
 
 
 class EvaluationToolsTests(unittest.TestCase):
+    def test_depth_curves_reproduce_top_three_and_do_not_hide_fixed_cutoff_misses(self):
+        report = evaluate()
+        rows = ranking_curves()["curves"]
+        at_three = next(row for row in rows if row["k"] == 3)
+        self.assertAlmostEqual(at_three["mean_recall"], report["mean_recall_at_3"])
+        self.assertAlmostEqual(at_three["mean_precision"], report["mean_precision_at_3"])
+        self.assertAlmostEqual(at_three["mean_ndcg"], report["mean_ndcg_at_3"])
+        self.assertEqual([row["mean_recall"] for row in rows],
+                         sorted(row["mean_recall"] for row in rows))
+        self.assertLess(rows[-1]["mean_recall"], 1)
+
     def test_comparison_checks_provenance_and_returns_observed_differences(self):
         report = evaluate()
         same = compare_reports(report, deepcopy(report))
