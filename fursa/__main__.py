@@ -38,6 +38,7 @@ def main():
     match = sub.add_parser("match")
     match.add_argument("--skills", required=True, help="Comma-separated exact catalogued skills")
     match.add_argument("--evidence", default="", help="Comma-separated simulated evidence IDs")
+    match.add_argument("--limit", type=int, choices=range(1, 13), default=3)
     passport_parser = sub.add_parser("passport")
     passport_parser.add_argument("--skills", required=True)
     passport_parser.add_argument("--evidence", default="")
@@ -147,7 +148,7 @@ def main():
             payload = {
                 "skills": [s.strip() for s in args.skills.split(",") if s.strip()],
                 "evidence": [s.strip() for s in args.evidence.split(",") if s.strip()]}
-            result = export_passport(payload) if args.command == "passport" else Matcher().match(payload)
+            result = export_passport(payload) if args.command == "passport" else Matcher().match(payload, args.limit)
         except ValueError as error:
             parser.error(str(error))
     text = json.dumps(result, indent=2)

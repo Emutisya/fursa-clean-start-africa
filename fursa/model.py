@@ -119,10 +119,12 @@ class Matcher:
             "message": "Inspect fitted fictional lexical statistics, not measured human performance.",
         }
 
-    def match(self, payload):
+    def match(self, payload, limit=3):
+        if type(limit) is not int or not 1 <= limit <= 12:
+            raise ValueError("Discovery limit must be an integer from 1 to 12.")
         skills, evidence = validate(payload)
         query = " ".join(SKILLS[skill] for skill in skills)
-        matches = self.model.rank(query, OPPORTUNITIES)
+        matches = self.model.rank(query, OPPORTUNITIES, limit)
         for row in matches:
             row["shared_skills"] = sorted(set(skills) & set(row["skills"]))
             row["skills_to_explore"] = sorted(set(row["skills"]) - set(skills))
@@ -133,12 +135,12 @@ class Matcher:
             "provenance": {
                 "method": "smoothed-tfidf-logtf-l2", "corpus_sha256": self.model.fingerprint,
                 "catalog_sha256": fingerprint(), "minimum_similarity": MIN_SIMILARITY,
-                "limit": 3, "tie_break": "full-precision cosine descending, then resource ID ascending",
+                "limit": limit, "tie_break": "full-precision cosine descending, then resource ID ascending",
                 "query_sha256": hashlib.sha256(query.encode("utf-8")).hexdigest(),
             },
             "passport": {"skills": skills, "evidence": evidence, "verification": "Unverified synthetic selections"},
             "opportunities": matches,
-            "pathways": self.model.rank(query, PATHWAYS),
+            "pathways": self.model.rank(query, PATHWAYS, limit),
             "message": "Discovery only. Similarities are not probabilities, employability scores or hiring decisions.",
             "no_match": not matches,
             "diagnostics": {

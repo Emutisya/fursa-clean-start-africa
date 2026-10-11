@@ -6,6 +6,21 @@ from fursa.model import Matcher, Tfidf, tokens
 
 
 class InspectionTests(unittest.TestCase):
+    def test_expanded_discovery_limit_preserves_prefix_and_strict_input_schema(self):
+        payload = {"skills": ["bookkeeping", "spreadsheets", "logistics", "solar", "electrical"]}
+        matcher = Matcher()
+        small = matcher.match(payload, 1)
+        larger = matcher.match(payload, 12)
+        self.assertEqual(small["opportunities"], larger["opportunities"][:1])
+        self.assertEqual(small["pathways"], larger["pathways"][:1])
+        self.assertGreater(len(larger["pathways"]), 3)
+        self.assertEqual(larger["provenance"]["limit"], 12)
+        for limit in (True, 0, 13, 1.5):
+            with self.assertRaises(ValueError):
+                matcher.match(payload, limit)
+        with self.assertRaises(ValueError):
+            matcher.match({**payload, "limit": 12})
+
     def test_provenance_separates_catalogue_metadata_from_rank_input(self):
         matcher = Matcher()
         before = matcher.match({"skills": ["carpentry"]})["provenance"]

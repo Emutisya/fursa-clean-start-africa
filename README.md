@@ -124,6 +124,11 @@ The catalogue hash includes simulated evidence and descriptive metadata;
 the corpus hash concerns fit text only. Evidence selections do not change query
 provenance or rankings. Fingerprints establish reproducibility, not authenticity.
 
+CLI discovery supports `match --skills "solar,electrical,spreadsheets" --limit 12`
+for a bounded expanded view (1 through 12, default 3). The cutoff and ranking
+remain unchanged; smaller views are prefixes of larger ones. The HTTP input
+schema and published evaluation continue to use the default top three.
+
 Skill names and evidence IDs must exactly match `catalog`. Empty, duplicate, unknown or sensitive inputs are rejected. Selected evidence must belong to a selected skill. Evidence flags change gap explanations, **never the ranking**.
 
 Training produces inspectable learned IDF weights in an ignored `models` directory. The tiny model is fitted deterministically on startup for CLI and HTTP inference; the persisted file is an audit artifact, not a required runtime dependency. Editing the catalogue intentionally changes its fingerprint and requires regenerating the published evaluation.
