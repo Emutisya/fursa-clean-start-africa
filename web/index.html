@@ -99,6 +99,7 @@ button:disabled { opacity:.55; cursor:wait }
 .chip[aria-pressed="true"] { background:var(--cp-accent-soft); color:var(--cp-accent); border-color:var(--cp-accent) }
 label { display:block; font-size:13px; font-weight:650; margin:16px 0 8px }
 textarea { resize:vertical; min-height:76px; width:100%; padding:12px; font:inherit; color:var(--cp-text); background:var(--cp-bg-elevated); border:1px solid var(--cp-border); border-radius:10px }
+textarea[aria-invalid="true"] { border-color:var(--cp-danger) }
 .evidence label { display:flex; gap:8px; align-items:start; font-weight:400; margin:8px 0 }
 input[type="checkbox"] { accent-color:var(--cp-accent); margin-top:5px }
 .divider { border:0; border-top:1px solid var(--cp-border); margin:24px 0 }
@@ -146,7 +147,7 @@ code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text
 <button data-preset="workshop">Workshop maker</button><button data-preset="energy">Energy learner</button><button data-preset="enterprise">Enterprise helper</button><button data-preset="unmatched">Explore a gap</button>
 </div>
 <form id="form">
-<label for="skills">Skills · exact names, separated by commas</label><textarea id="skills" spellcheck="false" aria-describedby="skill-help"></textarea>
+<label for="skills">Skills · exact names, separated by commas</label><textarea id="skills" spellcheck="false" aria-describedby="skill-help" aria-invalid="false" aria-errormessage="status"></textarea>
 <div id="skill-help" class="small muted">Use the buttons below. Only catalogued skills are accepted.</div>
 <div id="chips" class="chips" aria-label="Available skills"></div>
 <hr class="divider">
@@ -192,6 +193,7 @@ function invalidate() {
   $("export").disabled=true;
   $("results").setAttribute("aria-busy","false");
   $("submit").disabled=false;
+  $("skills").setAttribute("aria-invalid","false");
   $("results").replaceChildren(element("div","Selections changed. Explore again to update recommendations.","empty"));
 }
 function refresh() {
@@ -291,7 +293,9 @@ async function match(event) {
   if (!catalog) { setStatus("Start the local Python server to use learned model inference.",true); return; }
   const skills=skillValues();
   if (!skills.length || new Set(skills).size!==skills.length || skills.some(s=>!catalog.skills.includes(s))) {
-    invalidate(); setStatus("Choose at least one exact catalogued skill, with no duplicates. Do not enter personal details.",true); return;
+    invalidate(); $("skills").setAttribute("aria-invalid","true");
+    setStatus("Choose at least one exact catalogued skill, with no duplicates. Do not enter personal details.",true);
+    $("skills").focus(); return;
   }
   invalidate();
   const id=++requestId; $("submit").disabled=true; setStatus("Running local TF-IDF inference…");

@@ -119,6 +119,11 @@ captioned tables and row/column headers. All lexical terms are inspectable,
 including terms omitted from the compact shared-term list. Values display six
 decimals; any rounding difference does not affect retrieval.
 
+Invalid dashboard skill selections are marked with `aria-invalid`, associated
+with the recovery message and focused for correction before any request is
+sent. Editing or reset clears the invalid state; rejected free text never
+reaches inference.
+
 `python -m fursa inspect` prints reproducible fitted vocabulary, IDF and actual
 fit-document frequencies, plus resource vector sizes/norms and corpus provenance.
 This is model inspection, not a new model or an outcome evaluation.
