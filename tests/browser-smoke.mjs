@@ -88,6 +88,10 @@ try {
   await unlink(exportFile);
   await evaluate(`document.querySelector('[data-preset="unmatched"]').click()`);
   await waitFor(`document.getElementById("results").textContent.includes("No relevant catalogue match")`);
+  assert.match(await evaluate(`document.querySelector("[data-query-diagnostics]").textContent`),/without opportunities: astronomy/);
+  assert.equal(await evaluate(`document.querySelectorAll("[data-query-diagnostics] code").length`),3);
+  await evaluate(`document.querySelector('[data-recovery="skills"]').click()`);
+  assert.equal(await evaluate(`document.activeElement.id`),"skills");
   await evaluate(`window.invalidRequests=0; window.savedFetch=window.fetch;
     window.fetch=(...args)=>{if(args[0]==="/api/match") window.invalidRequests++; return window.savedFetch(...args);}`);
   await evaluate(`document.getElementById("skills").value=""; document.getElementById("skills").dispatchEvent(new Event("input")); document.getElementById("form").requestSubmit()`);

@@ -129,6 +129,11 @@ Selections are retained, the explore button regains focus and late responses
 cannot restore results or enable export. Cancellation is local; it is not a
 claim that an already-received loopback request was erased from memory.
 
+Dashboard coverage details distinguish unsupported selected skills from known
+query vocabulary, and expose cutoff/limit/tie-break and computation fingerprints.
+No-match results offer an explicit focus-return action to catalogue selections,
+without suggesting that a user is unsuitable or must acquire another skill.
+
 `python -m fursa inspect` prints reproducible fitted vocabulary, IDF and actual
 fit-document frequencies, plus resource vector sizes/norms and corpus provenance.
 This is model inspection, not a new model or an outcome evaluation.

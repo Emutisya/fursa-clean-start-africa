@@ -131,6 +131,7 @@ li { margin:6px 0 }
 footer { border-top:1px solid var(--cp-border); padding:24px 0; margin-top:32px; font-size:12px; color:var(--cp-text-muted) }
 .method { margin-top:24px; background:var(--cp-bg-elevated); border:1px solid var(--cp-border); border-radius:10px; padding:16px 20px }
 code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text) }
+.fingerprint { overflow-wrap:anywhere }
 @media(max-width:900px) { .layout { grid-template-columns:1fr } .hero { grid-template-columns:1fr; gap:16px } main,.nav { padding:20px } .explain { grid-template-columns:1fr } }
 @media(prefers-reduced-motion:no-preference) { button { transition:background .15s,border-color .15s } }
 </style>
@@ -242,6 +243,10 @@ function render(result) {
   if (result.no_match) {
     const empty=element("div",undefined,"empty");
     empty.append(element("h3","No relevant catalogue match"),element("p","This is a gap in our small fictional catalogue, not a judgement about your skills. A human adviser could help find options beyond this demo.","muted"));
+    const recovery=element("button","Review catalogue skill selections"); recovery.type="button";
+    recovery.dataset.recovery="skills";
+    recovery.onclick=()=>{ $("skills").focus(); $("skills").scrollIntoView({block:"center"}); };
+    empty.append(recovery);
     container.append(empty);
   }
   result.opportunities.forEach((row,index)=>{
@@ -288,6 +293,20 @@ function render(result) {
       card.append(details,element("p",row.status,"small muted")); pathways.append(card);
     });
     container.append(pathways);
+  }
+  if(result.diagnostics && result.provenance) {
+    const details=element("details"), info=element("div",undefined,"small muted");
+    details.dataset.queryDiagnostics="true";
+    details.append(element("summary","Inspect catalogue coverage and reproducibility"));
+    info.append(element("p",`${result.diagnostics.known_terms.length} known query terms; ${result.diagnostics.unknown_terms.length} unknown. Lexical coverage is not confidence.`));
+    info.append(element("p",`Selected skills without opportunities: ${result.diagnostics.skills_without_opportunities.join(", ") || "None in this catalogue."}`));
+    info.append(element("p",`Selected skills without pathways: ${result.diagnostics.skills_without_pathways.join(", ") || "None in this catalogue."}`));
+    info.append(element("p",`Cutoff ${result.provenance.minimum_similarity}; result limit ${result.provenance.limit}. ${result.provenance.tie_break}.`));
+    ["corpus_sha256","catalog_sha256","query_sha256"].forEach(key=>{
+      const line=element("p",`${key}: `); line.append(element("code",result.provenance[key],"fingerprint")); info.append(line);
+    });
+    info.append(element("p","Fingerprints identify this synthetic computation, not authentic evidence or a credential."));
+    details.append(info); container.append(details);
   }
 }
 async function match(event) {
