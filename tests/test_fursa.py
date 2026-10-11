@@ -7,6 +7,7 @@ import subprocess
 import sys
 import threading
 import unittest
+from unittest.mock import patch
 
 from fursa.catalog import corpus
 from fursa.evaluate import CASES, evaluate
@@ -57,6 +58,18 @@ class ModelTests(unittest.TestCase):
         vector = model.vector("timber metal")
         self.assertAlmostEqual(sum(value * value for value in vector.values()), 1)
         self.assertEqual(model.vector("unseenword"), {})
+
+    def test_invalid_benchmarks_are_rejected_even_with_python_optimization(self):
+        for cases in ([], [CASES[0]], [*CASES, CASES[0]], [*CASES, ("unknown", "new query", {"missing"})]):
+            with patch("fursa.evaluate.CASES", cases), self.assertRaises(ValueError):
+                evaluate()
+        script = (
+            "import importlib; m=importlib.import_module('fursa.evaluate'); "
+            "m.CASES=[*m.CASES,m.CASES[0]]; m.evaluate()"
+        )
+        result = subprocess.run([sys.executable, "-O", "-c", script], text=True, capture_output=True, timeout=10)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("Duplicate evaluation", result.stderr)
 
     def test_skill_match_and_evidence_gap(self):
         result = self.matcher.match({"skills": ["carpentry"]})

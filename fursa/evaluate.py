@@ -23,8 +23,17 @@ CASES = [
 def evaluate():
     training = corpus()
     canonical = lambda text: tuple(tokens(text))
-    assert len({canonical(text) for _, text, _ in CASES}) == len(CASES)
-    assert not {canonical(text) for _, text, _ in CASES} & {canonical(text) for text in training}
+    if not CASES or not any(relevant for _, _, relevant in CASES) or not any(not relevant for _, _, relevant in CASES):
+        raise ValueError("Evaluation requires both relevant and unmatched queries.")
+    ids = [identifier for identifier, _, _ in CASES]
+    queries = [canonical(text) for _, text, _ in CASES]
+    if len(set(ids)) != len(ids) or len(set(queries)) != len(queries):
+        raise ValueError("Duplicate evaluation ID or query.")
+    if set(queries) & {canonical(text) for text in training}:
+        raise ValueError("Exact training/evaluation query overlap.")
+    allowed = {row["id"] for row in OPPORTUNITIES}
+    if any(not isinstance(relevant, (set, frozenset)) or not relevant <= allowed for _, _, relevant in CASES):
+        raise ValueError("Evaluation relevance labels must reference catalogued opportunities.")
     model = Tfidf(training)
     rows = []
     for id, query, relevant in CASES:
