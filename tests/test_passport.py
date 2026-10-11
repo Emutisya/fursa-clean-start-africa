@@ -2,10 +2,22 @@ import unittest
 import json
 from unittest.mock import patch
 
-from fursa.passport import checksum, compare_selections, export_passport, import_passport
+from fursa.passport import checksum, compare_selections, export_passport, import_passport, merge_selections
 
 
 class PassportTests(unittest.TestCase):
+    def test_merge_is_canonical_deduplicates_between_sets_and_preserves_unverified_status(self):
+        sets = [{"skills": ["solar"], "evidence": ["e-solar"]},
+                {"skills": ["electrical", "solar"]}]
+        result = merge_selections(sets)
+        self.assertEqual(result, merge_selections(list(reversed(sets))))
+        self.assertEqual(import_passport(json.dumps(result).encode()),
+                         {"skills": ["electrical", "solar"], "evidence": ["e-solar"]})
+        self.assertEqual(result["verification"], "Unverified synthetic selections")
+        for selections in ([], sets[:1], sets * 3, [sets[0], {"skills": ["unknown"]}]):
+            with self.assertRaises(ValueError):
+                merge_selections(selections)
+
     def test_comparison_describes_simulation_changes_not_people(self):
         before = {"skills": ["carpentry"]}
         evidence_only = compare_selections(before, {"skills": ["carpentry"], "evidence": ["e-carpentry"]})

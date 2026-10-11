@@ -154,6 +154,11 @@ both envelopes and reports selection/evidence differences and before/after
 resource ranks. This compares simulation states, not people, progress or ability.
 Evidence-only changes leave rankings unchanged.
 
+`python -m fursa merge-passports models\a.json models\b.json --output models\merged.json`
+validates two to four envelopes and exports the deduplicated union of their
+bounded selections. No input is rewritten. Merging simulations does not verify
+evidence, transfer qualifications or establish any person's skills.
+
 ### Offline catalogue browsing
 
 `python -m fursa browse --kind opportunity --skills "bookkeeping,spreadsheets"`

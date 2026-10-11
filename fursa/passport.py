@@ -79,3 +79,15 @@ def compare_selections(before, after):
         "ranking_changes": changes,
         "message": "Compare two simulations, not people. Rank changes are lexical, not progress or ability scores.",
     }
+
+
+def merge_selections(selections):
+    if not isinstance(selections, list) or not 2 <= len(selections) <= 4:
+        raise ValueError("Merge two to four bounded synthetic selection sets.")
+    skills = set()
+    evidence = set()
+    for selection in selections:
+        selected_skills, selected_evidence = validate(selection)
+        skills.update(selected_skills)
+        evidence.update(selected_evidence)
+    return export_passport({"skills": sorted(skills), "evidence": sorted(evidence)})
