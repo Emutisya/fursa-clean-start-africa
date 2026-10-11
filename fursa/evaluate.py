@@ -1,6 +1,7 @@
 """Held-out, manually labelled synthetic retrieval scenarios, never used to fit."""
 import hashlib
 import json
+import math
 from collections import Counter
 from .catalog import OPPORTUNITIES, corpus
 from .model import Tfidf, tokens
@@ -50,9 +51,12 @@ def evaluate():
     for id, query, relevant in CASES:
         ranked = [row["id"] for row in model.rank(query, OPPORTUNITIES)]
         hits = len(set(ranked) & relevant)
+        dcg = sum(1 / math.log2(i + 2) for i, item in enumerate(ranked) if item in relevant)
+        ideal = sum(1 / math.log2(i + 2) for i in range(min(3, len(relevant))))
         rows.append({
             "id": id, "query": query, "relevant": sorted(relevant), "ranked": ranked,
             "recall_at_3": hits / len(relevant) if relevant else None,
+            "ndcg_at_3": dcg / ideal if ideal else None,
             "precision_at_3": hits / 3 if relevant else None,
             "reciprocal_rank": next((1 / (i + 1) for i, item in enumerate(ranked)
                                      if item in relevant), 0) if relevant else None,
@@ -60,6 +64,13 @@ def evaluate():
         })
     positive = [row for row in rows if row["relevant"]]
     negative = [row for row in rows if not row["relevant"]]
+    coverage = {
+        identifier: {
+            "relevant_cases": sum(identifier in row["relevant"] for row in rows),
+            "retrieved_relevant_cases": sum(identifier in row["relevant"] and identifier in row["ranked"] for row in rows),
+            "retrieved_irrelevant_cases": sum(identifier not in row["relevant"] and identifier in row["ranked"] for row in rows),
+        } for identifier in sorted(allowed)
+    }
     return {
         "fit_documents": model.document_count, "vocabulary_size": len(model.idf),
         "corpus_sha256": model.fingerprint, "held_out_cases": len(rows),
@@ -69,8 +80,10 @@ def evaluate():
         ).encode("utf-8")).hexdigest(),
         "positive_cases": len(positive), "negative_cases": len(negative),
         "mean_recall_at_3": sum(row["recall_at_3"] for row in positive) / len(positive),
+        "mean_ndcg_at_3": sum(row["ndcg_at_3"] for row in positive) / len(positive),
         "mean_precision_at_3": sum(row["precision_at_3"] for row in positive) / len(positive),
         "mean_reciprocal_rank": sum(row["reciprocal_rank"] for row in positive) / len(positive),
         "negative_abstention_rate": sum(row["correct_abstention"] for row in negative) / len(negative),
         "cases": rows,
+        "resource_coverage": coverage,
     }

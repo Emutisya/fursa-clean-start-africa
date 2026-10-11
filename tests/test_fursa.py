@@ -203,6 +203,20 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(observed["corpus_sha256"], original["corpus_sha256"])
         self.assertNotEqual(observed["benchmark_sha256"], original["benchmark_sha256"])
 
+    def test_discounted_gain_and_resource_coverage_match_observed_rankings(self):
+        report = evaluate()
+        positive = [case for case in report["cases"] if case["relevant"]]
+        for case in positive:
+            gain = sum(1 / math.log2(index + 2) for index, identifier in enumerate(case["ranked"])
+                       if identifier in case["relevant"])
+            ideal = sum(1 / math.log2(index + 2) for index in range(min(3, len(case["relevant"]))))
+            self.assertAlmostEqual(case["ndcg_at_3"], gain / ideal)
+        self.assertAlmostEqual(report["mean_ndcg_at_3"], sum(case["ndcg_at_3"] for case in positive) / len(positive))
+        for identifier, coverage in report["resource_coverage"].items():
+            self.assertEqual(coverage["relevant_cases"], sum(identifier in case["relevant"] for case in report["cases"]))
+            self.assertEqual(coverage["retrieved_relevant_cases"] + coverage["retrieved_irrelevant_cases"],
+                             sum(identifier in case["ranked"] for case in report["cases"]))
+
 
 class HttpTests(unittest.TestCase):
     @classmethod
