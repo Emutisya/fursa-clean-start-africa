@@ -7,6 +7,17 @@ from fursa.model import Matcher, Tfidf, tokens
 
 
 class InspectionTests(unittest.TestCase):
+    def test_pathway_overlap_and_gap_explanations_follow_selections_not_ranking(self):
+        matcher = Matcher()
+        result = matcher.match({"skills": ["solar", "electrical"], "evidence": ["e-solar"]})
+        paths = {row["id"]: row for row in result["pathways"]}
+        self.assertEqual(paths["p-solar"]["shared_skills"], ["solar"])
+        self.assertEqual(paths["p-solar"]["evidence_gaps"], [])
+        self.assertEqual(paths["p-electrical"]["evidence_gaps"], ["Synthetic electrical work sample"])
+        without = matcher.match({"skills": ["solar", "electrical"]})
+        self.assertEqual([(row["id"], row["similarity"]) for row in result["pathways"]],
+                         [(row["id"], row["similarity"]) for row in without["pathways"]])
+
     def test_evidence_audit_observes_gap_changes_without_affecting_either_ranking(self):
         matcher = Matcher()
         payload = {"skills": ["carpentry", "welding"], "evidence": ["e-carpentry"]}

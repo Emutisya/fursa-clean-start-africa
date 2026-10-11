@@ -462,7 +462,11 @@ function render(result) {
     const pathways=element("div",undefined,"pathways");
     result.pathways.forEach(row=>{
       const card=element("article",undefined,"pathway");
+      card.dataset.pathway=row.id;
       card.append(element("span","SIMULATED · NOT CERTIFIED","eyebrow"),element("h3",row.title));
+      card.append(element("p",`Selected skills in common: ${row.shared_skills.join(", ") || "None; lexical overlap only."}`,"small muted"),
+        element("p",`Shared lexical terms: ${row.shared_terms.join(", ")}. Cosine ${row.similarity.toFixed(3)}, not assessment likelihood.`,"small muted"),
+        element("p",row.evidence_gaps.length?"Simulated sample discussion: "+row.evidence_gaps.join("; "):"Selected simulation only. Nothing verified.","small muted"));
       const details=element("details"), list=element("ol");
       details.append(element("summary","Explore the review steps"));
       row.steps.forEach(step=>list.append(element("li",step))); details.append(list);

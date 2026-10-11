@@ -243,7 +243,8 @@ class Matcher:
         skills, evidence = validate(payload)
         query = " ".join(SKILLS[skill] for skill in skills)
         matches = self.model.rank(query, OPPORTUNITIES, limit)
-        for row in matches:
+        pathways = self.model.rank(query, PATHWAYS, limit)
+        for row in matches + pathways:
             row["shared_skills"] = sorted(set(skills) & set(row["skills"]))
             row["skills_to_explore"] = sorted(set(row["skills"]) - set(skills))
             row["evidence_gaps"] = [e["title"] for e in EVIDENCE
@@ -259,7 +260,7 @@ class Matcher:
             "passport": {"skills": skills, "evidence": evidence, "verification": "Unverified synthetic selections"},
             "portable_passport": export_passport({"skills": skills, "evidence": evidence}),
             "opportunities": matches,
-            "pathways": self.model.rank(query, PATHWAYS, limit),
+            "pathways": pathways,
             "message": "Discovery only. Similarities are not probabilities, employability scores or hiring decisions.",
             "no_match": not matches,
             "diagnostics": {

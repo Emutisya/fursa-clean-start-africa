@@ -74,6 +74,10 @@ try {
   await waitFor(`document.querySelector(".match details").open`);
   assert(await evaluate(`document.querySelectorAll('table[data-contributions="o-solar"] tbody tr').length>6`));
   assert.equal(await evaluate(`document.querySelector("table th").scope`),"col");
+  assert.match(await evaluate(`document.querySelector('[data-pathway="p-solar"]').textContent`),/Selected skills in common: solar/);
+  await evaluate(`document.querySelector('[data-evidence="e-solar"]').click(); document.getElementById("form").requestSubmit()`);
+  await waitFor(`document.querySelector('[data-pathway="p-solar"]')?.textContent.includes("Selected simulation only")`);
+  assert.match(await evaluate(`document.querySelector('[data-pathway="p-electrical"]').textContent`),/Synthetic electrical work sample/);
   await evaluate(`document.querySelector('[data-preset="enterprise"]').click()`);
   await waitFor(`document.getElementById("results").textContent.includes("accounts practice") && !document.getElementById("submit").disabled`);
   const downloadPath=process.argv[4] ? resolve(process.argv[4]) : resolve(".browser-check","exports");

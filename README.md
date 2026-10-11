@@ -172,6 +172,10 @@ person profiles, and are never aggregated into an ability ranking.
 
 Skill names and evidence IDs must exactly match `catalog`. Empty, duplicate, unknown or sensitive inputs are rejected. Selected evidence must belong to a selected skill. Evidence flags change gap explanations, **never the ranking**.
 
+Simulated pathway responses and cards now explain declared skill overlap,
+lexical terms/cosine and optional simulated sample gaps just like opportunities.
+Selecting a sample changes discussion text, never pathway rank or verification.
+
 Training produces inspectable learned IDF weights in an ignored `models` directory. The tiny model is fitted deterministically on startup for CLI and HTTP inference; the persisted file is an audit artifact, not a required runtime dependency. Editing the catalogue intentionally changes its fingerprint and requires regenerating the published evaluation.
 
 Training now exports `fursa.tfidf-audit.v1` with synthetic/review flags, tokenizer,
