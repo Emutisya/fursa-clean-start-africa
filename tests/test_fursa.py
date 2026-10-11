@@ -6,6 +6,7 @@ import socket
 import subprocess
 import sys
 import threading
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -16,6 +17,19 @@ from fursa.server import make_server
 
 
 class CLITests(unittest.TestCase):
+    def test_output_path_failures_are_actionable_and_do_not_claim_success(self):
+        with tempfile.TemporaryDirectory() as directory:
+            target = Path(directory) / "blocked"
+            target.write_text("existing file", encoding="utf-8")
+            result = subprocess.run(
+                [sys.executable, "-m", "fursa", "train", "--output", str(target / "model.json")],
+                text=True, capture_output=True, timeout=10,
+            )
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("Could not write output", result.stderr)
+        self.assertNotIn("Traceback", result.stderr)
+        self.assertEqual(result.stdout, "")
+
     def test_occupied_port_explains_how_to_recover(self):
         with socket.socket() as listener:
             listener.bind(("127.0.0.1", 0))

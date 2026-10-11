@@ -60,8 +60,11 @@ def main():
     output = getattr(args, "output", None)
     if output:
         path = Path(output)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(text + "\n", encoding="utf-8")
+        try:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(text + "\n", encoding="utf-8")
+        except OSError as error:
+            parser.exit(2, f"Error: Could not write output to {path}. Check the destination and permissions. ({error})\n")
     print(text)
 
 
