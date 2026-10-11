@@ -1,4 +1,6 @@
 import http.client
+from contextlib import redirect_stderr
+import io
 import json
 import math
 from pathlib import Path
@@ -221,6 +223,19 @@ class HttpTests(unittest.TestCase):
             self.assertIn("timed out", json.loads(response.read())["error"])
         finally:
             connection.close()
+        self.assertEqual(self.request("GET", "/api/health")[0], 200)
+
+    def test_client_disconnect_does_not_log_a_server_failure(self):
+        logs = io.StringIO()
+        with redirect_stderr(logs), patch.object(self.server.RequestHandlerClass, "send", side_effect=ConnectionResetError("client closed")):
+            connection = http.client.HTTPConnection("127.0.0.1", self.server.server_port, timeout=5)
+            try:
+                connection.request("GET", "/api/health")
+                with self.assertRaises(http.client.RemoteDisconnected):
+                    connection.getresponse()
+            finally:
+                connection.close()
+        self.assertEqual(logs.getvalue(), "")
         self.assertEqual(self.request("GET", "/api/health")[0], 200)
 
 
