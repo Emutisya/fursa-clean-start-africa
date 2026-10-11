@@ -1,6 +1,7 @@
 """Held-out, manually labelled synthetic retrieval scenarios, never used to fit."""
 import hashlib
 import json
+from collections import Counter
 from .catalog import OPPORTUNITIES, corpus
 from .model import Tfidf, tokens
 
@@ -24,7 +25,7 @@ CASES = [
 
 def evaluate():
     training = corpus()
-    canonical = lambda text: tuple(tokens(text))
+    canonical = lambda text: tuple(sorted(Counter(tokens(text)).items()))
     if not CASES or not any(relevant for _, _, relevant in CASES) or not any(not relevant for _, _, relevant in CASES):
         raise ValueError("Evaluation requires both relevant and unmatched queries.")
     ids = [identifier for identifier, _, _ in CASES]

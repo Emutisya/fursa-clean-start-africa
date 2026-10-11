@@ -105,6 +105,14 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(result["opportunities"][0]["similarity"], with_evidence["opportunities"][0]["similarity"])
         self.assertTrue(result["human_review_required"])
 
+    def test_bag_of_words_duplicates_and_training_overlap_are_rejected(self):
+        duplicate = ("reordered", " ".join(reversed(CASES[0][1].split())), CASES[0][2])
+        with patch("fursa.evaluate.CASES", [*CASES, duplicate]), self.assertRaisesRegex(ValueError, "Duplicate evaluation"):
+            evaluate()
+        leaked = ("leaked", " ".join(reversed(corpus()[0].split())), CASES[0][2])
+        with patch("fursa.evaluate.CASES", [*CASES, leaked]), self.assertRaisesRegex(ValueError, "training/evaluation"):
+            evaluate()
+
     def test_consumers_cannot_mutate_catalogs_through_match_results(self):
         expected = self.matcher.match({"skills": ["carpentry"]})
         result = self.matcher.match({"skills": ["carpentry"]})
