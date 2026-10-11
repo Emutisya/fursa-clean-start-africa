@@ -423,6 +423,12 @@ Inputs are limited to one MiB of strict UTF-8 JSON. Corpus changes
 are flagged rather than hidden. Deltas are not statistical significance or
 evidence of real-user improvement; optional `--output` saves the comparison.
 
+`python -m fursa validate-evaluation evaluation.json` independently checks every
+case's recall/precision/NDCG/reciprocal rank/abstention, diagnostic counts and
+per-resource coverage as well as aggregates and benchmark provenance.
+Comparison uses these same checks. Arithmetic consistency is not authentication
+of labels, independent quality assessment or evidence of social outcomes.
+
 `python -m fursa evaluation-curves` reports positive-query recall, precision
 and NDCG for every catalogue depth from 1 through 9 at the unchanged cutoff.
 Precision divides by requested depth even when fewer rows survive. Depth three

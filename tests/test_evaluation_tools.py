@@ -3,10 +3,25 @@ from copy import deepcopy
 from unittest.mock import patch
 
 from fursa.evaluate import baseline_comparison, cutoff_diagnostics, evaluate, evaluation_slices, inspect_case, ranking_curves
-from fursa.reporting import compare_reports
+from fursa.reporting import compare_reports, validate_report
 
 
 class EvaluationToolsTests(unittest.TestCase):
+    def test_validation_rejects_per_case_and_coverage_claims_that_aggregate_checks_miss(self):
+        report = evaluate()
+        self.assertEqual(validate_report(evaluate("pathway"))["resource_kind"], "pathway")
+        wrong_case = deepcopy(report)
+        wrong_case["cases"][0]["precision_at_3"] = 1
+        wrong_coverage = deepcopy(report)
+        wrong_coverage["resource_coverage"]["o-timber"]["retrieved_irrelevant_cases"] += 1
+        wrong_diagnostic = deepcopy(report)
+        wrong_diagnostic["cases"][0]["diagnostics"]["returned_count"] = 9
+        wrong_abstention = deepcopy(report)
+        next(row for row in wrong_abstention["cases"] if not row["relevant"])["correct_abstention"] = 1
+        for invalid in (wrong_case, wrong_coverage, wrong_diagnostic, wrong_abstention):
+            with self.assertRaises(ValueError):
+                validate_report(invalid)
+
     def test_case_inspection_distinguishes_empty_vocabulary_and_cutoff_rejections(self):
         failure = inspect_case("q13")
         self.assertTrue(all(row["fitted_idf"] is None for row in failure["query_terms"]))

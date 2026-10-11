@@ -4,6 +4,7 @@ import math
 import hashlib
 
 from .jsonio import unique_fields
+from .catalog import OPPORTUNITIES, PATHWAYS
 
 METRICS = ("mean_recall_at_3", "mean_ndcg_at_3", "mean_precision_at_3",
            "mean_reciprocal_rank", "negative_abstention_rate")
@@ -13,6 +14,9 @@ MAX_REPORT_BYTES = 1048576
 def validate_report(report):
     if not isinstance(report, dict):
         raise ValueError("Evaluation report must be an object.")
+    if any(type(report.get(field)) is not int or report[field] < 1
+           for field in ("held_out_cases", "positive_cases", "negative_cases", "fit_documents", "vocabulary_size")):
+        raise ValueError("Evaluation counts must be positive integers, not booleans.")
     for field in ("corpus_sha256", "benchmark_sha256"):
         value = report.get(field)
         if not isinstance(value, str) or len(value) != 64 or any(c not in "0123456789abcdef" for c in value):
@@ -25,8 +29,13 @@ def validate_report(report):
     if not isinstance(cases, list) or not cases:
         raise ValueError("Evaluation report must include observed cases.")
     ids = []
+    kind = report.get("resource_kind", "opportunity")
+    if not isinstance(kind, str) or kind not in {"opportunity", "pathway"}:
+        raise ValueError("Recorded resource kind must be opportunity or pathway.")
+    resources = OPPORTUNITIES if kind == "opportunity" else PATHWAYS
+    allowed = {row["id"] for row in resources}
     for case in cases:
-        if (not isinstance(case, dict) or not isinstance(case.get("id"), str)
+        if (not isinstance(case, dict) or not isinstance(case.get("id"), str) or not case["id"].strip()
                 or not isinstance(case.get("query"), str) or not case["query"].strip()):
             raise ValueError("Evaluation cases require string IDs.")
         ids.append(case["id"])
@@ -37,6 +46,33 @@ def validate_report(report):
                 raise ValueError("Recorded rankings and relevance must be unique string-ID lists.")
         if len(case["ranked"]) > 3:
             raise ValueError("Only top-three reports are comparable.")
+        if not set(case["ranked"] + case["relevant"]) <= allowed:
+            raise ValueError("Recorded cases must reference known fictional resources of their kind.")
+        relevant, ranked = set(case["relevant"]), case["ranked"]
+        hits = len(relevant & set(ranked))
+        ideal = sum(1 / math.log2(i + 2) for i in range(min(3, len(relevant))))
+        expected = {
+            "recall_at_3": hits / len(relevant) if relevant else None,
+            "precision_at_3": hits / 3 if relevant else None,
+            "ndcg_at_3": sum(1 / math.log2(i + 2) for i, value in enumerate(ranked) if value in relevant) / ideal if ideal else None,
+            "reciprocal_rank": next((1 / (i + 1) for i, value in enumerate(ranked) if value in relevant), 0) if relevant else None,
+        }
+        for metric, value in expected.items():
+            actual = case.get(metric)
+            if (value is None and actual is not None or value is not None
+                    and (type(actual) not in (int, float) or not math.isfinite(actual)
+                         or not math.isclose(actual, value, rel_tol=0, abs_tol=1e-12))):
+                raise ValueError("Per-case evaluation metrics do not match recorded rankings.")
+        abstention = case.get("correct_abstention")
+        if relevant and abstention is not None or not relevant and (type(abstention) is not bool or abstention != (not ranked)):
+            raise ValueError("Per-case abstention must match recorded negative rankings.")
+        if "diagnostics" in case:
+            diagnostic = case["diagnostics"]
+            if (not isinstance(diagnostic, dict) or type(diagnostic.get("returned_count")) is not int
+                    or diagnostic["returned_count"] != len(ranked)
+                    or diagnostic.get("missed_relevant") != sorted(relevant - set(ranked))
+                    or diagnostic.get("irrelevant_returned") != sorted(set(ranked) - relevant)):
+                raise ValueError("Case diagnostics disagree with recorded retrievals.")
     if len(set(ids)) != len(ids) or report.get("held_out_cases") != len(cases):
         raise ValueError("Evaluation case counts or IDs are inconsistent.")
     benchmark = hashlib.sha256(json.dumps(
@@ -63,6 +99,19 @@ def validate_report(report):
     totals["negative_abstention_rate"] = sum(not row["ranked"] for row in negative) / len(negative)
     if any(not math.isclose(report[metric], totals[metric], abs_tol=1e-12, rel_tol=0) for metric in METRICS):
         raise ValueError("Aggregate evaluation metrics do not match recorded rankings.")
+    coverage = report.get("resource_coverage")
+    if not isinstance(coverage, dict) or set(coverage) != allowed:
+        raise ValueError("Resource coverage must enumerate the fictional catalogue for its kind.")
+    for identifier in sorted(allowed):
+        expected = {
+            "relevant_cases": sum(identifier in row["relevant"] for row in cases),
+            "retrieved_relevant_cases": sum(identifier in row["relevant"] and identifier in row["ranked"] for row in cases),
+            "retrieved_irrelevant_cases": sum(identifier not in row["relevant"] and identifier in row["ranked"] for row in cases),
+        }
+        actual = coverage[identifier]
+        if (not isinstance(actual, dict) or set(actual) != set(expected)
+                or any(type(actual[key]) is not int or actual[key] != value for key, value in expected.items())):
+            raise ValueError("Resource coverage counts disagree with recorded rankings.")
     return report
 
 

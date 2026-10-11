@@ -75,6 +75,8 @@ def main():
     evaluation_compare.add_argument("before")
     evaluation_compare.add_argument("after")
     evaluation_compare.add_argument("--output")
+    evaluation_validate = sub.add_parser("validate-evaluation")
+    evaluation_validate.add_argument("path")
     match = sub.add_parser("match")
     match.add_argument("--skills", required=True, help="Comma-separated exact catalogued skills")
     match.add_argument("--evidence", default="", help="Comma-separated simulated evidence IDs")
@@ -224,6 +226,15 @@ def main():
     elif args.command == "compare-evaluations":
         try:
             result = compare_reports(read_report(args.before), read_report(args.after))
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
+    elif args.command == "validate-evaluation":
+        try:
+            report = read_report(args.path)
+            result = {"synthetic": True, "human_review_required": True, "recorded_metrics_consistent": True,
+                      "resource_kind": report.get("resource_kind", "opportunity"),
+                      "held_out_cases": report["held_out_cases"], "benchmark_sha256": report["benchmark_sha256"],
+                      "message": "Recorded arithmetic consistency, not authentication or independent outcome verification."}
         except (ValueError, OSError) as error:
             parser.error(str(error))
     elif args.command == "match-batch":
