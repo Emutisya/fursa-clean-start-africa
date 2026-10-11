@@ -201,6 +201,12 @@ keys, catalogue fingerprint and content checksum before replacing selections.
 No file or metadata is uploaded; inference requires a separate Explore action.
 Invalid files preserve existing selections, and reset/edit supersedes pending imports.
 
+`python -m fursa convert-legacy-passport models\old.json --output models\v1.json`
+deliberately converts the exact older dashboard envelope after bounded UTF-8,
+field/safety and current skill/evidence validation. Unknown fields are rejected,
+not discarded. Old files lack catalogue provenance, so review current mappings
+before conversion; the new checksum does not authenticate the old document.
+
 `python -m fursa compare-passports models\before.json models\after.json` validates
 both envelopes and reports selection/evidence differences and before/after
 resource ranks. This compares simulation states, not people, progress or ability.

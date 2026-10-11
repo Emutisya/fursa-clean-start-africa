@@ -3,10 +3,21 @@ import json
 from unittest.mock import patch
 from fursa.model import Matcher
 
-from fursa.passport import checksum, compare_selections, edit_selections, export_passport, import_passport, merge_selections
+from fursa.passport import checksum, compare_selections, convert_legacy, edit_selections, export_passport, import_passport, merge_selections
 
 
 class PassportTests(unittest.TestCase):
+    def test_explicit_legacy_conversion_never_upgrades_claims_or_discards_unknown_fields(self):
+        legacy = {"project": "Fursa | Clean Start Africa", "synthetic": True, "credential_issued": False,
+                  "human_review_required": True, "skills": ["welding", "carpentry"],
+                  "evidence": ["e-carpentry"], "verification": "Unverified synthetic selections"}
+        converted = convert_legacy(legacy)
+        self.assertEqual(converted, export_passport({"skills": legacy["skills"], "evidence": legacy["evidence"]}))
+        for field, value in (("credential_issued", True), ("name", "rejected"), ("verification", "Verified"),
+                             ("project", "Other issuer"), ("human_review_required", 1)):
+            with self.subTest(field=field), self.assertRaises(ValueError):
+                convert_legacy({**legacy, field: value})
+
     def test_match_embeds_the_same_portable_envelope_as_cli_export(self):
         payload = {"skills": ["carpentry"], "evidence": ["e-carpentry"]}
         result = Matcher().match(payload)

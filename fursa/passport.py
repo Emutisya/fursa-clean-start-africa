@@ -119,3 +119,14 @@ def edit_selections(payload, changes):
     return export_passport({
         "skills": sorted(updated_skills), "evidence": sorted(updated_evidence - stale_evidence),
     })
+
+
+def convert_legacy(body):
+    fields = {"project", "synthetic", "credential_issued", "human_review_required",
+              "skills", "evidence", "verification"}
+    if (not isinstance(body, dict) or set(body) != fields
+            or body["project"] != "Fursa | Clean Start Africa" or body["synthetic"] is not True
+            or body["credential_issued"] is not False or body["human_review_required"] is not True
+            or body["verification"] != VERIFICATION):
+        raise ValueError("Convert only the exact older unverified synthetic dashboard format, without extra fields.")
+    return export_passport({"skills": body["skills"], "evidence": body["evidence"]})

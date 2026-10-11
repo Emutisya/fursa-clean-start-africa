@@ -8,7 +8,7 @@ from .catalog import EVIDENCE, SKILLS
 from .evaluate import baseline_comparison, cutoff_diagnostics, evaluate, evaluation_slices, ranking_curves
 from .discovery import browse, compare, detail, preview_additions, related, review_plan, skill_map
 from .model import Matcher
-from .passport import compare_selections, edit_selections, export_passport, merge_selections, read_passport
+from .passport import compare_selections, convert_legacy, edit_selections, export_passport, merge_selections, read_passport
 from .reporting import compare_reports, read_report
 from .jsonio import read_json
 from .server import make_server
@@ -70,6 +70,9 @@ def main():
     passport_parser.add_argument("--output")
     import_parser = sub.add_parser("import-passport")
     import_parser.add_argument("path")
+    legacy_parser = sub.add_parser("convert-legacy-passport")
+    legacy_parser.add_argument("path")
+    legacy_parser.add_argument("--output")
     passport_compare = sub.add_parser("compare-passports")
     passport_compare.add_argument("before")
     passport_compare.add_argument("after")
@@ -185,6 +188,11 @@ def main():
     elif args.command == "import-passport":
         try:
             result = Matcher().match(read_passport(args.path))
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
+    elif args.command == "convert-legacy-passport":
+        try:
+            result = convert_legacy(read_json(args.path, 16384))
         except (ValueError, OSError) as error:
             parser.error(str(error))
     elif args.command == "compare-passports":
