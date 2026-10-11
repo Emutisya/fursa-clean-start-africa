@@ -50,6 +50,15 @@ try {
   await evaluate(`document.querySelector('[data-preset="workshop"]').click()`);
   await waitFor(`document.querySelectorAll(".match").length===2 && !document.getElementById("submit").disabled`);
   assert.match(await evaluate(`document.getElementById("results").textContent`),/Timber workshop/);
+  await evaluate(`window.savedPrint=window.print; window.print=()=>{window.printCalled=true;}; document.getElementById("print-review").click()`);
+  assert.equal(await evaluate(`window.printCalled`),true);
+  assert.match(await evaluate(`document.getElementById("review-print").textContent`),/Unverified simulation/);
+  await send("Emulation.setEmulatedMedia",{media:"print"});
+  assert.equal(await evaluate(`getComputedStyle(document.querySelector("main")).display`),"none");
+  assert.equal(await evaluate(`getComputedStyle(document.getElementById("review-print")).display`),"block");
+  await send("Emulation.setEmulatedMedia",{media:"screen"});
+  await evaluate(`window.dispatchEvent(new Event("afterprint")); window.print=window.savedPrint`);
+  assert.equal(await evaluate(`document.getElementById("review-print").childNodes.length`),0);
   assert.equal(await evaluate(`document.querySelector("#evidence input").checked`),true);
   await evaluate(`document.querySelector("#evidence input").click(); document.getElementById("form").requestSubmit()`);
   await waitFor(`document.querySelectorAll(".match").length===2 && !document.getElementById("submit").disabled`);
@@ -105,6 +114,7 @@ try {
   await evaluate(`document.getElementById("reset").click()`);
   assert.equal(await evaluate(`document.getElementById("skills").value`),"");
   assert.equal(await evaluate(`document.getElementById("skills").getAttribute("aria-invalid")`),"false");
+  assert.equal(await evaluate(`document.getElementById("print-review").disabled`),true);
   await evaluate(`window.savedFetch=window.fetch; window.fetch=(url,options)=>{
     if(url!=="/api/match") return window.savedFetch(url,options);
     return new Promise(resolve=>{window.finishDelayed=()=>window.savedFetch(url,{...options,signal:undefined}).then(resolve);});

@@ -138,6 +138,12 @@ query vocabulary, and expose cutoff/limit/tie-break and computation fingerprints
 No-match results offer an explicit focus-return action to catalogue selections,
 without suggesting that a user is unsuitable or must acquire another skill.
 
+After valid inference, the dashboard can print a deliberately labelled
+unverified discussion summary containing bounded selections, fictional
+resources, simulated gaps and human-review questions. Print layout excludes
+controls; editing/reset disables it and clears generated content. Printing
+creates only a user-controlled local document, never a credential or submission.
+
 `python -m fursa inspect` prints reproducible fitted vocabulary, IDF and actual
 fit-document frequencies, plus resource vector sizes/norms and corpus provenance.
 This is model inspection, not a new model or an outcome evaluation.

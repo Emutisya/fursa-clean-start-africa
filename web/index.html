@@ -136,6 +136,12 @@ footer { border-top:1px solid var(--cp-border); padding:24px 0; margin-top:32px;
 .method { margin-top:24px; background:var(--cp-bg-elevated); border:1px solid var(--cp-border); border-radius:10px; padding:16px 20px }
 code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text) }
 .fingerprint { overflow-wrap:anywhere }
+#review-print { display:none }
+@media print {
+  header,main,dialog { display:none !important }
+  #review-print { display:block; padding:24px }
+  #review-print section { break-inside:avoid; border-bottom:1px solid var(--cp-border); padding:12px 0 }
+}
 @media(max-width:900px) { .layout { grid-template-columns:1fr } .hero { grid-template-columns:1fr; gap:16px } main,.nav { padding:20px } .explain { grid-template-columns:1fr } }
 @media(prefers-reduced-motion:no-preference) { button { transition:background .15s,border-color .15s } }
 </style>
@@ -165,6 +171,7 @@ code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text
 <div id="status" role="status" aria-live="polite"></div>
 </form>
 <button id="export" type="button" disabled>Export synthetic passport</button> <button id="reset" type="button">Reset</button>
+<p><button id="print-review" type="button" disabled>Print human-review discussion summary</button></p>
 </aside>
 <section aria-label="Discovery results">
 <div class="result-head"><div><div class="step">02 / EXPLORE POSSIBILITIES</div><h2>Skills to opportunity</h2><p class="small muted">Catalog similarity, not suitability. Human review is required for every next step.</p></div></div>
@@ -184,6 +191,7 @@ code { font-family:Consolas,"Courier New",Courier,monospace; color:var(--cp-text
 </div>
 <footer>Fursa | Clean Start Africa · Research prototype · Built for exploration, not deployment in hiring.<br>Local inference only. No API keys, external fonts, analytics or downloaded model weights.</footer>
 </main>
+<section id="review-print" aria-label="Synthetic human-review discussion summary"></section>
 <dialog id="resource-dialog" aria-labelledby="resource-title"><h2 id="resource-title" tabindex="-1">Fictional resource detail</h2>
 <div id="resource-content" aria-busy="false"></div><button id="resource-close" type="button">Close resource detail</button></dialog>
 <script>
@@ -343,6 +351,7 @@ function invalidate() {
   if(pending) pending.abort();
   pending=null;
   $("export").disabled=true;
+  $("print-review").disabled=true; $("review-print").replaceChildren();
   $("results").setAttribute("aria-busy","false");
   $("submit").disabled=false;
   $("cancel").hidden=true;
@@ -490,7 +499,7 @@ async function match(event) {
     const result=await response.json();
     if (!response.ok) throw new Error(result.error || "Inference failed.");
     if (id!==requestId) return;
-    lastResult=result; $("export").disabled=false; render(result); setStatus("Local inference complete. All results are synthetic.");
+    lastResult=result; $("export").disabled=false; $("print-review").disabled=false; render(result); setStatus("Local inference complete. All results are synthetic.");
   } catch(error) { if(id===requestId) setStatus((error.name==="TimeoutError"?"The local inference request timed out.":error.message)+" Check that the local server is running.",true); }
   finally { if(id===requestId) { $("submit").disabled=false; $("cancel").hidden=true; pending=null; $("results").setAttribute("aria-busy","false"); } }
 }
@@ -517,6 +526,30 @@ $("export").onclick=()=>{
   setTimeout(()=>URL.revokeObjectURL(url),1000);
   setStatus("Exported simulated selections only. This is not a credential.");
 };
+$("print-review").onclick=()=>{
+  if(!lastResult) return;
+  const output=$("review-print"); output.replaceChildren();
+  output.append(element("h1","Fursa synthetic discussion summary"),
+    element("p","Unverified simulation. Human review required. Not a credential, application, offer or assessment decision."),
+    element("p","Selected catalogue skills: "+lastResult.passport.skills.join(", ")),
+    element("p","Selected simulated samples: "+(lastResult.passport.evidence.join(", ") || "None. Nothing verified.")));
+  if(lastResult.no_match) output.append(element("p","No catalogue match. This is a coverage gap, not a judgement about a person."));
+  lastResult.opportunities.forEach(row=>{
+    const section=element("section");
+    section.append(element("h2",row.title),element("p",row.setting),
+      element("p","Catalogue skills: "+row.skills.join(", ")),
+      element("p","Simulated samples to discuss: "+(row.evidence_gaps.join("; ") || "Selected simulations cover the catalogue list; no evidence is verified.")));
+    output.append(section);
+  });
+  output.append(element("h2","Questions for a human adviser"));
+  const questions=element("ul");
+  ["What published criteria and consent should govern any optional work sample?",
+   "What recognition, fees, accessibility and appeal options can a provider verify?",
+   "What alternatives exist outside this small fictional catalogue?"].forEach(text=>questions.append(element("li",text)));
+  output.append(questions,element("p","Catalogue SHA-256: "+lastResult.provenance.catalog_sha256,"fingerprint"));
+  window.print();
+};
+window.addEventListener("afterprint",()=>$("review-print").replaceChildren());
 (async()=>{
   if(location.protocol==="file:") { setStatus("Open via the local server: python -m fursa serve, then http://127.0.0.1:8765. File preview cannot run Python inference.",true); return; }
   try {
