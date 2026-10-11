@@ -2,10 +2,11 @@
 import json
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 from .catalog import EVIDENCE, SKILLS
 from .model import Matcher
+from .discovery import browse, compare, detail, skill_map
 
 HTML = Path(__file__).resolve().parent.parent / "web" / "index.html"
 MAX_BODY = 4096
@@ -62,13 +63,40 @@ def make_server(port=8765):
         def do_GET(self):
             if not self.allowed():
                 return
-            path = urlsplit(self.path).path
+            target = urlsplit(self.path)
+            path = target.path
             if path == "/":
                 self.send(200, HTML.read_bytes(), "text/html")
             elif path == "/api/catalog":
                 self.send(200, {"skills": list(SKILLS), "evidence": EVIDENCE, "synthetic": True})
             elif path == "/api/health":
                 self.send(200, {"status": "ok", "model": "learned-tfidf", "synthetic": True})
+            elif path == "/api/skills":
+                self.send(200, skill_map())
+            elif path in {"/api/resources", "/api/compare"}:
+                try:
+                    if len(target.query) > 2048:
+                        raise ValueError("Query too large.")
+                    query = parse_qs(target.query, keep_blank_values=True, strict_parsing=True, max_num_fields=16)
+                    if path == "/api/resources":
+                        if set(query) - {"kind", "skill"} or len(query.get("kind", [])) > 1:
+                            raise ValueError("Use one kind and unique catalogue skill filters.")
+                        result = browse(query.get("kind", ["opportunity"])[0], query.get("skill", []))
+                    else:
+                        if set(query) - {"id"}:
+                            raise ValueError("Only resource IDs are accepted.")
+                        result = compare(query.get("id", []))
+                except ValueError:
+                    self.send(400, {"error": "Use bounded catalogue kind/skill filters or two to four distinct comparison IDs."})
+                    return
+                self.send(200, result)
+            elif path.startswith("/api/resources/"):
+                try:
+                    result = detail(path[len("/api/resources/"):])
+                except ValueError:
+                    self.send(404, {"error": "Unknown fictional resource ID; use /api/resources."})
+                    return
+                self.send(200, result)
             else:
                 self.send(404, {"error": "Not found."})
 

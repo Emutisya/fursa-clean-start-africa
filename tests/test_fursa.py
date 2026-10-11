@@ -249,6 +249,25 @@ class HttpTests(unittest.TestCase):
         self.assertEqual(status, 200)
         self.assertEqual(json.loads(raw)["opportunities"][0]["id"], "o-solar")
 
+    def test_read_only_discovery_routes_use_bounded_filters_and_comparisons(self):
+        status, raw = self.request("GET", "/api/resources?skill=bookkeeping&skill=spreadsheets")
+        self.assertEqual(status, 200)
+        self.assertEqual([row["id"] for row in json.loads(raw)["items"]], ["o-accounts"])
+        status, raw = self.request("GET", "/api/resources/p-solar")
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(raw)["resource"]["id"], "p-solar")
+        status, raw = self.request("GET", "/api/compare?id=o-accounts&id=o-dispatch")
+        self.assertEqual(status, 200)
+        self.assertEqual(json.loads(raw)["common_skills"], ["spreadsheets"])
+        self.assertEqual(self.request("GET", "/api/skills")[0], 200)
+        for query in ("name=forbidden", "skill=unknown", "kind=pathway&kind=opportunity",
+                      "skill=carpentry&skill=carpentry", "skill=", "invalid", "skill=x&" * 17):
+            with self.subTest(query=query):
+                self.assertEqual(self.request("GET", "/api/resources?" + query)[0], 400)
+        self.assertEqual(self.request("GET", "/api/compare?id=o-solar")[0], 400)
+        self.assertEqual(self.request("GET", "/api/resources/unknown")[0], 404)
+        self.assertEqual(self.request("GET", "/api/resources", headers={"Host": "example.invalid"})[0], 403)
+
     def test_catalog_and_page(self):
         status, raw = self.request("GET", "/api/catalog")
         self.assertEqual(status, 200)

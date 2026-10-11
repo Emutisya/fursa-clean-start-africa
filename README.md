@@ -252,6 +252,12 @@ human review required; no automated consequential action
 - `GET /` serves the interactive demo.
 - `GET /api/health` reports model readiness.
 - `GET /api/catalog` lists accepted skills and simulated evidence.
+- `GET /api/resources?kind=opportunity&skill=spreadsheets` browses fictional
+  resources (repeat `skill` to require all). Unique filters, one kind, at most
+  16 query fields and 2048 query characters; unknown parameters are rejected.
+- `GET /api/resources/o-solar` retrieves detail and linked simulated evidence.
+- `GET /api/compare?id=o-accounts&id=o-dispatch` compares two to four distinct IDs.
+- `GET /api/skills` exposes the bounded catalogue skill/coverage map.
 - `POST /api/match`, `Content-Type: application/json`, accepts:
 
 ```json
