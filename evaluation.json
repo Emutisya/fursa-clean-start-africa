@@ -25,7 +25,37 @@
       "ndcg_at_3": 1.0,
       "precision_at_3": 0.3333333333333333,
       "reciprocal_rank": 1.0,
-      "correct_abstention": null
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "assembly",
+          "furniture",
+          "measuring",
+          "timber"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "o-timber",
+            "similarity": 0.73743,
+            "relevant": true,
+            "shared_terms": [
+              "furniture",
+              "measuring",
+              "timber",
+              "assembly"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "q02",
@@ -40,7 +70,37 @@
       "ndcg_at_3": 1.0,
       "precision_at_3": 0.3333333333333333,
       "reciprocal_rank": 1.0,
-      "correct_abstention": null
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "fabrication",
+          "joints",
+          "metal",
+          "welding"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "o-metal",
+            "similarity": 0.718009,
+            "relevant": true,
+            "shared_terms": [
+              "joints",
+              "metal",
+              "welding",
+              "fabrication"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "q03",
@@ -55,7 +115,37 @@
       "ndcg_at_3": 1.0,
       "precision_at_3": 0.3333333333333333,
       "reciprocal_rank": 1.0,
-      "correct_abstention": null
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "circuits",
+          "panels",
+          "photovoltaic",
+          "wiring"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "o-solar",
+            "similarity": 0.582546,
+            "relevant": true,
+            "shared_terms": [
+              "photovoltaic",
+              "wiring",
+              "circuits",
+              "panels"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "q04",
@@ -70,7 +160,37 @@
       "ndcg_at_3": 1.0,
       "precision_at_3": 0.3333333333333333,
       "reciprocal_rank": 1.0,
-      "correct_abstention": null
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "fabric",
+          "garments",
+          "sewing",
+          "stitching"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "o-textile",
+            "similarity": 0.776757,
+            "relevant": true,
+            "shared_terms": [
+              "fabric",
+              "garments",
+              "stitching",
+              "sewing"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "q05",
@@ -85,7 +205,37 @@
       "ndcg_at_3": 1.0,
       "precision_at_3": 0.3333333333333333,
       "reciprocal_rank": 1.0,
-      "correct_abstention": null
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "cooking",
+          "hygiene",
+          "kitchen",
+          "preparation"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "o-kitchen",
+            "similarity": 0.871917,
+            "relevant": true,
+            "shared_terms": [
+              "cooking",
+              "hygiene",
+              "kitchen",
+              "preparation"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "q06",
@@ -101,7 +251,47 @@
       "ndcg_at_3": 1.0,
       "precision_at_3": 0.3333333333333333,
       "reciprocal_rank": 1.0,
-      "correct_abstention": null
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "bookkeeping",
+          "formulas",
+          "invoices",
+          "reconciliation"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 2,
+        "missed_relevant": [],
+        "irrelevant_returned": [
+          "o-dispatch"
+        ],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "o-accounts",
+            "similarity": 0.559622,
+            "relevant": true,
+            "shared_terms": [
+              "invoices",
+              "formulas",
+              "bookkeeping",
+              "reconciliation"
+            ]
+          },
+          {
+            "id": "o-dispatch",
+            "similarity": 0.086776,
+            "relevant": false,
+            "shared_terms": [
+              "formulas"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "q07",
@@ -116,7 +306,37 @@
       "ndcg_at_3": 1.0,
       "precision_at_3": 0.3333333333333333,
       "reciprocal_rank": 1.0,
-      "correct_abstention": null
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "delivery",
+          "dispatch",
+          "enquiries",
+          "warehouse"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "o-dispatch",
+            "similarity": 0.547277,
+            "relevant": true,
+            "shared_terms": [
+              "enquiries",
+              "warehouse",
+              "delivery",
+              "dispatch"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "q08",
@@ -131,7 +351,35 @@
       "ndcg_at_3": 1.0,
       "precision_at_3": 0.3333333333333333,
       "reciprocal_rank": 1.0,
-      "correct_abstention": null
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 3,
+        "unique_term_count": 3,
+        "known_terms": [
+          "horticulture",
+          "irrigation",
+          "seedlings"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "o-nursery",
+            "similarity": 0.730499,
+            "relevant": true,
+            "shared_terms": [
+              "irrigation",
+              "seedlings",
+              "horticulture"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "q09",
@@ -146,7 +394,37 @@
       "ndcg_at_3": 1.0,
       "precision_at_3": 0.3333333333333333,
       "reciprocal_rank": 1.0,
-      "correct_abstention": null
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "fittings",
+          "leaks",
+          "pipes",
+          "plumbing"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 1,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "o-water",
+            "similarity": 0.565344,
+            "relevant": true,
+            "shared_terms": [
+              "fittings",
+              "leaks",
+              "pipes",
+              "plumbing"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "q10",
@@ -163,7 +441,44 @@
       "ndcg_at_3": 1.0,
       "precision_at_3": 0.6666666666666666,
       "reciprocal_rank": 1.0,
-      "correct_abstention": null
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [
+          "furniture",
+          "metal",
+          "timber",
+          "welding"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 2,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "all_relevant_retrieved",
+        "results": [
+          {
+            "id": "o-timber",
+            "similarity": 0.410754,
+            "relevant": true,
+            "shared_terms": [
+              "furniture",
+              "timber"
+            ]
+          },
+          {
+            "id": "o-metal",
+            "similarity": 0.399937,
+            "relevant": true,
+            "shared_terms": [
+              "metal",
+              "welding"
+            ]
+          }
+        ]
+      }
     },
     {
       "id": "q11",
@@ -174,7 +489,24 @@
       "ndcg_at_3": null,
       "precision_at_3": null,
       "reciprocal_rank": null,
-      "correct_abstention": true
+      "correct_abstention": true,
+      "diagnostics": {
+        "token_count": 3,
+        "unique_term_count": 3,
+        "known_terms": [
+          "astronomy",
+          "galaxies",
+          "telescope"
+        ],
+        "unknown_terms": [],
+        "known_token_fraction": 1.0,
+        "has_vector": true,
+        "returned_count": 0,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "correct_abstention",
+        "results": []
+      }
     },
     {
       "id": "q12",
@@ -185,7 +517,24 @@
       "ndcg_at_3": null,
       "precision_at_3": null,
       "reciprocal_rank": null,
-      "correct_abstention": true
+      "correct_abstention": true,
+      "diagnostics": {
+        "token_count": 3,
+        "unique_term_count": 3,
+        "known_terms": [],
+        "unknown_terms": [
+          "oboe",
+          "sonatas",
+          "xylophone"
+        ],
+        "known_token_fraction": 0.0,
+        "has_vector": false,
+        "returned_count": 0,
+        "missed_relevant": [],
+        "irrelevant_returned": [],
+        "outcome": "correct_abstention",
+        "results": []
+      }
     },
     {
       "id": "q13",
@@ -198,7 +547,27 @@
       "ndcg_at_3": 0.0,
       "precision_at_3": 0.0,
       "reciprocal_rank": 0,
-      "correct_abstention": null
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [],
+        "unknown_terms": [
+          "cabinetry",
+          "dovetails",
+          "sanding",
+          "woodwork"
+        ],
+        "known_token_fraction": 0.0,
+        "has_vector": false,
+        "returned_count": 0,
+        "missed_relevant": [
+          "o-timber"
+        ],
+        "irrelevant_returned": [],
+        "outcome": "missed_relevant",
+        "results": []
+      }
     },
     {
       "id": "q14",
@@ -211,7 +580,27 @@
       "ndcg_at_3": 0.0,
       "precision_at_3": 0.0,
       "reciprocal_rank": 0,
-      "correct_abstention": null
+      "correct_abstention": null,
+      "diagnostics": {
+        "token_count": 4,
+        "unique_term_count": 4,
+        "known_terms": [],
+        "unknown_terms": [
+          "alteration",
+          "clothing",
+          "needle",
+          "tailor"
+        ],
+        "known_token_fraction": 0.0,
+        "has_vector": false,
+        "returned_count": 0,
+        "missed_relevant": [
+          "o-textile"
+        ],
+        "irrelevant_returned": [],
+        "outcome": "missed_relevant",
+        "results": []
+      }
     }
   ],
   "resource_coverage": {

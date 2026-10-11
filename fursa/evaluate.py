@@ -49,7 +49,8 @@ def evaluate():
     model = Tfidf(training)
     rows = []
     for id, query, relevant in CASES:
-        ranked = [row["id"] for row in model.rank(query, OPPORTUNITIES)]
+        results = model.rank(query, OPPORTUNITIES)
+        ranked = [row["id"] for row in results]
         hits = len(set(ranked) & relevant)
         dcg = sum(1 / math.log2(i + 2) for i, item in enumerate(ranked) if item in relevant)
         ideal = sum(1 / math.log2(i + 2) for i in range(min(3, len(relevant))))
@@ -61,6 +62,21 @@ def evaluate():
             "reciprocal_rank": next((1 / (i + 1) for i, item in enumerate(ranked)
                                      if item in relevant), 0) if relevant else None,
             "correct_abstention": not ranked if not relevant else None,
+            "diagnostics": {
+                **model.diagnostics(query),
+                "returned_count": len(ranked),
+                "missed_relevant": sorted(relevant - set(ranked)),
+                "irrelevant_returned": sorted(set(ranked) - relevant),
+                "outcome": (
+                    "correct_abstention" if not relevant and not ranked else
+                    "false_positive" if not relevant else
+                    "missed_relevant" if not hits else
+                    "partial_recall" if hits < len(relevant) else "all_relevant_retrieved"
+                ),
+                "results": [{"id": row["id"], "similarity": row["similarity"],
+                             "relevant": row["id"] in relevant, "shared_terms": row["shared_terms"]}
+                            for row in results],
+            },
         })
     positive = [row for row in rows if row["relevant"]]
     negative = [row for row in rows if not row["relevant"]]

@@ -278,6 +278,11 @@ The held-out texts are not fit documents; normalized token sequences are checked
 
 ### Optional real-browser smoke test
 
+Recorded evaluation cases include known/unknown term coverage, missed relevant
+and extra retrieved IDs, returned similarities/shared terms, and an explicit
+outcome category. A lexical vocabulary miss differs from a known-vector
+abstention. Categories describe synthetic relevance labels, not user outcomes.
+
 The application does not need Node or a browser automation package. If Node 22+ and Edge are already installed, the included CDP smoke test can exercise actual HTTP-backed presets, evidence changes, no-match, validation, reset, responsive layout and themes.
 
 In one PowerShell window, run `python -m fursa serve --port 8769`. In another, from this project directory:
