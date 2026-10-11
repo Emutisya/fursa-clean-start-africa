@@ -3,6 +3,7 @@ import hashlib
 import json
 import math
 import re
+from copy import deepcopy
 from collections import Counter
 
 from .catalog import EVIDENCE, OPPORTUNITIES, PATHWAYS, SKILLS, corpus, document
@@ -47,7 +48,7 @@ class Tfidf:
                              for term, value in query.items() if term in candidate}
             score = sum(contributions.values())
             if score >= MIN_SIMILARITY:
-                scored.append((score, {**item, "similarity": round(score, 6),
+                scored.append((score, {**deepcopy(item), "similarity": round(score, 6),
                                "shared_terms": sorted(contributions,
                                                       key=lambda term: (-contributions[term], term))[:6]}))
         return [row for _, row in sorted(scored, key=lambda item: (-item[0], item[1]["id"]))[:limit]]

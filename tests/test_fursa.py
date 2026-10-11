@@ -105,6 +105,13 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(result["opportunities"][0]["similarity"], with_evidence["opportunities"][0]["similarity"])
         self.assertTrue(result["human_review_required"])
 
+    def test_consumers_cannot_mutate_catalogs_through_match_results(self):
+        expected = self.matcher.match({"skills": ["carpentry"]})
+        result = self.matcher.match({"skills": ["carpentry"]})
+        result["opportunities"][0]["skills"].clear()
+        result["pathways"][0]["steps"].clear()
+        self.assertEqual(self.matcher.match({"skills": ["carpentry"]}), expected)
+
     def test_invalid_training_and_retrieval_inputs_have_explicit_errors(self):
         for documents in (None, [], "timber", [None], [""], ["123"]):
             with self.subTest(documents=documents), self.assertRaises(ValueError):
