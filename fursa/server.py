@@ -5,7 +5,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 from .catalog import EVIDENCE, SKILLS
-from .model import Matcher
+from .model import Matcher, SelectionError
 from .discovery import browse, compare, detail, skill_map
 
 HTML = Path(__file__).resolve().parent.parent / "web" / "index.html"
@@ -125,8 +125,13 @@ def make_server(port=8765):
                     raise ValueError("Incomplete request body.")
                 payload = json.loads(raw.decode("utf-8"), object_pairs_hook=unique_fields)
                 result = matcher.match(payload)
+            except SelectionError as error:
+                self.send(400, {"error": str(error), "error_code": error.code,
+                                "recovery": "/api/catalog", "request_retained": False})
+                return
             except (ValueError, UnicodeError, RecursionError):
-                self.send(400, {"error": "Invalid input. Use catalogued skills and simulated evidence only."})
+                self.send(400, {"error": "Invalid input. Use catalogued skills and simulated evidence only.",
+                                "error_code": "request_invalid_input", "recovery": "/api/catalog"})
                 return
             except TimeoutError:
                 self.send(408, {"error": "Request body timed out."})

@@ -12,6 +12,12 @@ TOKEN = re.compile(r"[a-z]+")
 MIN_SIMILARITY = 0.08
 
 
+class SelectionError(ValueError):
+    def __init__(self, code, message):
+        super().__init__(message)
+        self.code = code
+
+
 def tokens(text):
     return TOKEN.findall(text.lower())
 
@@ -85,24 +91,26 @@ class Tfidf:
 
 def validate(payload):
     if not isinstance(payload, dict):
-        raise ValueError("Send an object containing skills and optional evidence.")
+        raise SelectionError("selection_object_required", "Send an object containing skills and optional evidence.")
     if set(payload) - {"skills", "evidence"}:
-        raise ValueError("Only skills and evidence are accepted. Do not submit personal or sensitive data.")
+        raise SelectionError("selection_unknown_fields", "Only skills and evidence are accepted. Do not submit personal or sensitive data.")
     skills = payload.get("skills")
     evidence = payload.get("evidence", [])
     if not isinstance(skills, list) or not 1 <= len(skills) <= len(SKILLS):
-        raise ValueError("Choose at least one catalogued skill (maximum 13).")
+        raise SelectionError("selection_skill_count", "Choose at least one catalogued skill (maximum 13).")
     if any(not isinstance(s, str) or s not in SKILLS for s in skills):
-        raise ValueError("Use exact catalogued skill names; free-text biographies are not accepted.")
+        raise SelectionError("selection_unknown_skill", "Use exact catalogued skill names; free-text biographies are not accepted.")
     if len(set(skills)) != len(skills):
-        raise ValueError("Choose each skill only once.")
+        raise SelectionError("selection_duplicate_skill", "Choose each skill only once.")
     allowed = {row["id"]: row["skill"] for row in EVIDENCE}
     if not isinstance(evidence, list) or len(evidence) > len(EVIDENCE):
-        raise ValueError("Evidence must be a list of simulated catalogued evidence IDs.")
+        raise SelectionError("selection_evidence_list", "Evidence must be a list of simulated catalogued evidence IDs.")
     if any(not isinstance(e, str) or e not in allowed for e in evidence):
-        raise ValueError("Choose only simulated catalogued evidence IDs.")
-    if len(set(evidence)) != len(evidence) or any(allowed[e] not in skills for e in evidence):
-        raise ValueError("Select each evidence item once and only for your selected skills.")
+        raise SelectionError("selection_unknown_evidence", "Choose only simulated catalogued evidence IDs.")
+    if len(set(evidence)) != len(evidence):
+        raise SelectionError("selection_duplicate_evidence", "Select each evidence item once.")
+    if any(allowed[e] not in skills for e in evidence):
+        raise SelectionError("selection_cross_skill_evidence", "Choose evidence only for your selected skills.")
     return sorted(skills), sorted(evidence)
 
 

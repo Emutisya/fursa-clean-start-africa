@@ -293,6 +293,22 @@ class HttpTests(unittest.TestCase):
         self.assertEqual(self.post({"skills": ["carpentry"]}, Host="example.invalid")[0], 403)
         self.assertEqual(self.request("GET", "/missing")[0], 404)
 
+    def test_selection_errors_distinguish_recovery_without_echoing_rejected_values(self):
+        for payload, code in (
+            ({"skills": ["private-biography"]}, "selection_unknown_skill"),
+            ({"skills": ["solar"], "name": "private-name"}, "selection_unknown_fields"),
+            ({"skills": ["solar"], "evidence": ["e-electrical"]}, "selection_cross_skill_evidence"),
+            ({"skills": ["solar"], "evidence": ["e-solar", "e-solar"]}, "selection_duplicate_evidence"),
+        ):
+            with self.subTest(code=code):
+                status, raw = self.post(payload)
+                result = json.loads(raw)
+                self.assertEqual(status, 400)
+                self.assertEqual(result["error_code"], code)
+                self.assertEqual(result["recovery"], "/api/catalog")
+                self.assertNotIn("private", raw.decode())
+                self.assertFalse(result["request_retained"])
+
     def test_stalled_request_returns_timeout_without_breaking_server(self):
         connection = http.client.HTTPConnection("127.0.0.1", self.server.server_port, timeout=8)
         try:

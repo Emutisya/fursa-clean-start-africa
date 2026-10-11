@@ -268,6 +268,11 @@ The response contains a synthetic passport, up to three fictional opportunities,
 
 HTTP uses 400 for invalid input, 403 for disallowed origin/Host, 413 for an absent/oversized body, 415 for wrong media type, and 404 for unknown routes. There is no application, credential-issuance, upload or user-account endpoint.
 
+Selection validation responses distinguish stable `selection_*` error codes
+(object/count/unknown/duplicate/cross-skill evidence) and a `/api/catalog`
+recovery route. Invalid JSON/framing uses `request_invalid_input`. Error text
+never echoes rejected names, biographies or other values; no request is retained. There is no application, credential-issuance, upload or user-account endpoint.
+
 ## Observed synthetic evaluation
 
 See the full recorded run in [`evaluation.json`](evaluation.json), not an aspirational performance claim.
