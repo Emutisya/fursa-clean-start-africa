@@ -6,7 +6,7 @@ from pathlib import Path
 
 from .catalog import EVIDENCE, SKILLS
 from .evaluate import evaluate
-from .discovery import browse, compare, detail, related, skill_map
+from .discovery import browse, compare, detail, related, review_plan, skill_map
 from .model import Matcher
 from .server import make_server
 
@@ -23,6 +23,10 @@ def main():
     detail_parser.add_argument("id", help="Exact fictional resource ID")
     related_parser = sub.add_parser("related")
     related_parser.add_argument("id")
+    review_parser = sub.add_parser("review-plan")
+    review_parser.add_argument("id")
+    review_parser.add_argument("--skills", required=True)
+    review_parser.add_argument("--evidence", default="")
     compare_parser = sub.add_parser("compare")
     compare_parser.add_argument("ids", nargs="+", help="Two to four distinct fictional IDs")
     train = sub.add_parser("train")
@@ -71,6 +75,14 @@ def main():
     elif args.command == "related":
         try:
             result = related(args.id)
+        except ValueError as error:
+            parser.error(str(error))
+    elif args.command == "review-plan":
+        try:
+            result = review_plan(args.id, {
+                "skills": [s.strip() for s in args.skills.split(",") if s.strip()],
+                "evidence": [s.strip() for s in args.evidence.split(",") if s.strip()],
+            })
         except ValueError as error:
             parser.error(str(error))
     elif args.command == "compare":

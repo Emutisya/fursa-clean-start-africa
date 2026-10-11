@@ -135,6 +135,11 @@ co-occur in catalogue opportunities. Counts are not labour-market demand.
 pathways sharing a catalogue skill, explaining shared and additional skills.
 It excludes the source and makes no qualification-equivalence claims.
 
+`python -m fursa review-plan o-solar --skills solar --evidence e-solar` builds
+an optional discussion plan separating unselected skills from unverified
+simulated sample selections. Questions concern human criteria, consent,
+recognition and appeals; it does not assess competence or approve evidence.
+
 ```text
 Single-file HTML / Python CLI
           |

@@ -1,9 +1,19 @@
 import unittest
 
-from fursa.discovery import browse, compare, detail, related, skill_map
+from fursa.discovery import browse, compare, detail, related, review_plan, skill_map
 
 
 class DiscoveryTests(unittest.TestCase):
+    def test_review_plan_distinguishes_missing_skills_and_unverified_samples(self):
+        result = review_plan("o-solar", {"skills": ["solar"], "evidence": ["e-solar"]})
+        rows = {row["skill"]: row for row in result["evidence_review"]}
+        self.assertTrue(rows["solar"]["simulated_sample_selected"])
+        self.assertFalse(rows["electrical"]["selected_skill"])
+        self.assertEqual(result["skills_to_explore"], ["electrical"])
+        self.assertNotIn("approved", result)
+        with self.assertRaises(ValueError):
+            review_plan("o-solar", {"skills": ["solar"], "evidence": ["e-electrical"]})
+
     def test_related_resources_explain_overlap_without_self_links(self):
         result = related("o-accounts")
         rows = {row["resource"]["id"]: row for row in result["related"]}

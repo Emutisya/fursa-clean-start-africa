@@ -92,3 +92,27 @@ def related(identifier):
         "related": sorted(rows, key=lambda row: row["resource"]["id"]),
         "message": "Shared catalogue skills only; these are not recommendations or equivalence claims.",
     }
+
+
+def review_plan(identifier, payload):
+    from .model import validate
+
+    skills, evidence = validate(payload)
+    resource = detail(identifier)["resource"]
+    rows = [
+        {**deepcopy(row), "selected_skill": row["skill"] in skills,
+         "simulated_sample_selected": row["id"] in evidence,
+         "status": "Unverified simulation; human review required"}
+        for row in EVIDENCE if row["skill"] in resource["skills"]
+    ]
+    return {
+        "synthetic": True, "human_review_required": True,
+        "resource": resource, "evidence_review": rows,
+        "skills_to_explore": sorted(set(resource["skills"]) - set(skills)),
+        "review_questions": [
+            "What published criteria would a human assessor use?",
+            "What consent and minimum disclosure are appropriate for a work sample?",
+            "What recognition, accessibility, fees and appeal options can a provider confirm?",
+        ],
+        "message": "Optional discussion plan, not requirements, proof or an assessment decision.",
+    }
