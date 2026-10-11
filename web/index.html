@@ -508,8 +508,16 @@ async function match(event) {
     const result=await response.json();
     if (!response.ok) throw new Error(result.error || "Inference failed.");
     if (id!==requestId) return;
-    lastResult=result; $("export").disabled=false; $("print-review").disabled=false; render(result); setStatus("Local inference complete. All results are synthetic.");
-  } catch(error) { if(id===requestId) setStatus((error.name==="TimeoutError"?"The local inference request timed out.":error.message)+" Check that the local server is running.",true); }
+    await validateResult(result,skills,[...selectedEvidence]);
+    if(id!==requestId) return;
+    render(result); lastResult=result; $("export").disabled=false; $("print-review").disabled=false; setStatus("Local inference complete. All results are synthetic.");
+  } catch(error) {
+    if(id===requestId) {
+      lastResult=null; $("export").disabled=true; $("print-review").disabled=true;
+      $("results").replaceChildren(element("div","No validated results. Correct selections or retry the local Fursa server.","empty"));
+      setStatus((error.name==="TimeoutError"?"The local inference request timed out.":error.message)+" Check that the local server is running.",true);
+    }
+  }
   finally { if(id===requestId) { $("submit").disabled=false; $("cancel").hidden=true; pending=null; $("results").setAttribute("aria-busy","false"); } }
 }
 $("form").onsubmit=match;
@@ -559,25 +567,43 @@ $("print-review").onclick=()=>{
   window.print();
 };
 window.addEventListener("afterprint",()=>$("review-print").replaceChildren());
+async function validatePortable(body,text=null) {
+  const fields=["schema","synthetic","human_review_required","verification","catalog_sha256","skills","evidence","content_sha256"];
+  if(!body || Array.isArray(body) || Object.keys(body).sort().join("|")!==fields.sort().join("|")) throw new Error("Wrong schema.");
+  if(body.schema!=="fursa.synthetic-passport.v1" || body.synthetic!==true || body.human_review_required!==true || body.verification!=="Unverified synthetic selections") throw new Error("Safety flags required.");
+  if(!Array.isArray(body.skills) || !body.skills.length || body.skills.length>catalog.skills.length || new Set(body.skills).size!==body.skills.length || body.skills.some(skill=>typeof skill!=="string" || !catalog.skills.includes(skill))) throw new Error("Invalid skills.");
+  if(!Array.isArray(body.evidence) || body.evidence.length>catalog.evidence.length || new Set(body.evidence).size!==body.evidence.length || body.evidence.some(identifier=>typeof identifier!=="string" || !catalog.evidence.some(row=>row.id===identifier && body.skills.includes(row.skill)))) throw new Error("Invalid simulated evidence.");
+  if(JSON.stringify(body.skills)!==JSON.stringify([...body.skills].sort()) || JSON.stringify(body.evidence)!==JSON.stringify([...body.evidence].sort())) throw new Error("Canonical order required.");
+  if(text!==null) {
+    const keys=[...text.matchAll(/"((?:\\.|[^"\\])*)"\s*:/g)].map(match=>JSON.parse('"'+match[1]+'"'));
+    if(keys.length!==fields.length || new Set(keys).size!==keys.length) throw new Error("Duplicate fields.");
+  }
+  if(body.catalog_sha256!==catalog.catalog_sha256) throw new Error("Different catalogue.");
+  const unsigned=Object.fromEntries(Object.keys(body).filter(key=>key!=="content_sha256").sort().map(key=>[key,body[key]]));
+  const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(JSON.stringify(unsigned)));
+  const checksum=[...new Uint8Array(digest)].map(value=>value.toString(16).padStart(2,"0")).join("");
+  if(body.content_sha256!==checksum) throw new Error("Checksum mismatch.");
+}
+async function validateResult(result,skills,evidence) {
+  try {
+    if(result?.synthetic!==true || result.human_review_required!==true || !result.diagnostics || result.provenance?.catalog_sha256!==catalog.catalog_sha256) throw new Error();
+    for(const [kind,ids] of [["opportunities",catalog.opportunity_ids],["pathways",catalog.pathway_ids]]) {
+      const rows=result[kind];
+      if(!Array.isArray(rows) || rows.length>3 || new Set(rows.map(row=>row.id)).size!==rows.length) throw new Error();
+      if(rows.some(row=>!ids.includes(row.id) || row.synthetic!==true || row.human_review_required!==true || typeof row.similarity!=="number" || !Number.isFinite(row.similarity) || row.similarity<0 || row.similarity>1)) throw new Error();
+    }
+    await validatePortable(result.portable_passport);
+    const same=(actual,expected)=>JSON.stringify(actual)===JSON.stringify([...expected].sort());
+    if(!same(result.passport?.skills,skills) || !same(result.passport?.evidence,evidence) || !same(result.portable_passport.skills,skills) || !same(result.portable_passport.evidence,evidence) || result.no_match!==(result.opportunities.length===0)) throw new Error();
+  } catch(error) { throw new Error("Local response does not match the synthetic Fursa contract."); }
+}
 $("passport-import").onchange=async()=>{
   const file=$("passport-import").files[0]; if(!file) return;
   const id=++importId;
   try {
     if(!catalog || file.size<1 || file.size>16384) throw new Error("Bounded passport required.");
     const text=new TextDecoder("utf-8",{fatal:true,ignoreBOM:true}).decode(await file.arrayBuffer());
-    const body=JSON.parse(text), fields=["schema","synthetic","human_review_required","verification","catalog_sha256","skills","evidence","content_sha256"];
-    if(!body || Array.isArray(body) || Object.keys(body).sort().join("|")!==fields.sort().join("|")) throw new Error("Wrong schema.");
-    if(body.schema!=="fursa.synthetic-passport.v1" || body.synthetic!==true || body.human_review_required!==true || body.verification!=="Unverified synthetic selections") throw new Error("Safety flags required.");
-    if(!Array.isArray(body.skills) || !body.skills.length || body.skills.length>catalog.skills.length || new Set(body.skills).size!==body.skills.length || body.skills.some(skill=>typeof skill!=="string" || !catalog.skills.includes(skill))) throw new Error("Invalid skills.");
-    if(!Array.isArray(body.evidence) || body.evidence.length>catalog.evidence.length || new Set(body.evidence).size!==body.evidence.length || body.evidence.some(identifier=>typeof identifier!=="string" || !catalog.evidence.some(row=>row.id===identifier && body.skills.includes(row.skill)))) throw new Error("Invalid simulated evidence.");
-    if(JSON.stringify(body.skills)!==JSON.stringify([...body.skills].sort()) || JSON.stringify(body.evidence)!==JSON.stringify([...body.evidence].sort())) throw new Error("Canonical order required.");
-    const keys=[...text.matchAll(/"((?:\\.|[^"\\])*)"\s*:/g)].map(match=>JSON.parse('"'+match[1]+'"'));
-    if(keys.length!==fields.length || new Set(keys).size!==keys.length) throw new Error("Duplicate fields.");
-    if(body.catalog_sha256!==catalog.catalog_sha256) throw new Error("Different catalogue.");
-    const unsigned=Object.fromEntries(Object.keys(body).filter(key=>key!=="content_sha256").sort().map(key=>[key,body[key]]));
-    const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(JSON.stringify(unsigned)));
-    const checksum=[...new Uint8Array(digest)].map(value=>value.toString(16).padStart(2,"0")).join("");
-    if(body.content_sha256!==checksum) throw new Error("Checksum mismatch.");
+    const body=JSON.parse(text); await validatePortable(body,text);
     if(id!==importId) return;
     invalidate(); $("skills").value=body.skills.join(", "); selectedEvidence=new Set(body.evidence); refresh();
     setStatus("Validated unverified synthetic selections locally. Explore separately; no file was uploaded.");

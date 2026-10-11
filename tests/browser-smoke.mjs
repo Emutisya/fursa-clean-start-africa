@@ -174,6 +174,23 @@ try {
   assert.equal(await evaluate(`document.activeElement.dataset.skill`),"welding");
   assert.equal(await evaluate(`[...document.querySelectorAll(".chip")].filter(button=>button.tabIndex===0).length`),1);
   await evaluate(`document.getElementById("reset").click()`);
+  await evaluate(`(async()=>{window.goodMatch=await(await fetch("/api/match",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({skills:["solar"]})})).json();
+    window.responseFetch=window.fetch; window.fetch=async(url,options)=>{
+      if(url!=="/api/match") return window.responseFetch(url,options);
+      const result=structuredClone(window.goodMatch);
+      if(window.responseFault==="safety") result.human_review_required=false;
+      if(window.responseFault==="checksum") result.portable_passport.content_sha256="0".repeat(64);
+      if(window.responseFault==="resource") result.opportunities[0].id="unknown-resource";
+      return new Response(JSON.stringify(result),{status:200,headers:{"Content-Type":"application/json"}});
+    }; document.getElementById("skills").value="solar";})()`);
+  for(const fault of ["safety","checksum","resource"]) {
+    await evaluate(`window.responseFault=${JSON.stringify(fault)}; document.getElementById("form").requestSubmit()`);
+    await waitFor(`document.getElementById("status").textContent.includes("synthetic Fursa contract")`);
+    assert.equal(await evaluate(`document.getElementById("export").disabled`),true);
+    assert.equal(await evaluate(`document.getElementById("print-review").disabled`),true);
+    assert.equal(await evaluate(`document.querySelectorAll(".match").length`),0);
+  }
+  await evaluate(`window.fetch=window.responseFetch; document.getElementById("reset").click()`);
   await evaluate(`document.getElementById("browse-panel").open=true; document.getElementById("browse-load").click()`);
   await waitFor(`document.querySelectorAll(".catalog-item").length===9`);
   await evaluate(`document.querySelector('[data-detail="o-accounts"]').click()`);

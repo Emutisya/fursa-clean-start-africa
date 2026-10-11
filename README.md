@@ -144,6 +144,13 @@ resources, simulated gaps and human-review questions. Print layout excludes
 controls; editing/reset disables it and clears generated content. Printing
 creates only a user-controlled local document, never a credential or submission.
 
+Before displaying/exporting inference, the dashboard validates synthetic/review
+flags, known resource IDs, finite bounded scores, current catalogue provenance,
+requested selections and the portable passport checksum. Malformed or
+wrong-prototype responses clear results and keep export/print disabled, including
+rendering failures. This prevents accidental local contract confusion, not
+authentication of a server or issuer.
+
 `python -m fursa inspect` prints reproducible fitted vocabulary, IDF and actual
 fit-document frequencies, plus resource vector sizes/norms and corpus provenance.
 This is model inspection, not a new model or an outcome evaluation.
