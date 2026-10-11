@@ -330,6 +330,12 @@ lexical-only returned resources and overlaps omitted by cutoff/depth. Generic
 words can retrieve a resource without declared skill overlap. Associations are
 not ground-truth relevance, verified competence or eligibility.
 
+`python -m fursa term-sensitivity --skills "customer service"` removes all
+occurrences of each bounded catalogue expansion term in turn, reporting changes
+to both top-three rankings. For example, a generic word can explain a
+lexical-only suggestion. No free-text query, new training or skill-value score
+is introduced; these are representation diagnostics, not causal conclusions.
+
 ```text
 Single-file HTML / Python CLI
           |

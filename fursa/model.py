@@ -266,6 +266,32 @@ class Matcher:
             "message": "Declared catalogue overlap versus lexical retrieval, not relevance ground truth, verified skill or eligibility.",
         }
 
+    def term_sensitivity(self, payload):
+        skills, _ = validate(payload)
+        query_terms = tokens(" ".join(SKILLS[skill] for skill in skills))
+        baseline = self.match(payload)
+        scenarios = []
+        for omitted, count in sorted(Counter(query_terms).items()):
+            remaining = [term for term in query_terms if term != omitted]
+            changes = {}
+            for kind, resources in (("opportunities", OPPORTUNITIES), ("pathways", PATHWAYS)):
+                old = [row["id"] for row in baseline[kind]]
+                new = [row["id"] for row in self.model.rank(
+                    " ".join(remaining), resources, candidate_vectors=self._resource_vectors)]
+                changes[kind] = {
+                    "ranked": new, "ranking_changed": old != new,
+                    "no_longer_returned": sorted(set(old) - set(new)),
+                    "newly_returned": sorted(set(new) - set(old)),
+                }
+            scenarios.append({"omitted_term": omitted, "removed_occurrences": count,
+                              "empty_query": not remaining, "changes": changes})
+        return {
+            "synthetic": True, "human_review_required": True,
+            "baseline": {kind: [row["id"] for row in baseline[kind]] for kind in ("opportunities", "pathways")},
+            "scenarios": scenarios,
+            "message": "Remove-all-occurrences lexical term sensitivity within catalogue expansions, not causal skill value or real-user outcomes.",
+        }
+
     def match(self, payload, limit=3):
         from .passport import export_passport
 

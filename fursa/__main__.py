@@ -49,6 +49,9 @@ def main():
     evidence_audit_parser.add_argument("--evidence", default="")
     overlap_parser = sub.add_parser("overlap-review")
     overlap_parser.add_argument("--skills", required=True)
+    term_sensitivity_parser = sub.add_parser("term-sensitivity")
+    term_sensitivity_parser.add_argument("--skills", required=True)
+    term_sensitivity_parser.add_argument("--output")
     compare_parser = sub.add_parser("compare")
     compare_parser.add_argument("ids", nargs="+", help="Two to four distinct fictional IDs")
     train = sub.add_parser("train")
@@ -197,6 +200,11 @@ def main():
     elif args.command == "overlap-review":
         try:
             result = Matcher().overlap_review({"skills": [s.strip() for s in args.skills.split(",") if s.strip()]})
+        except ValueError as error:
+            parser.error(str(error))
+    elif args.command == "term-sensitivity":
+        try:
+            result = Matcher().term_sensitivity({"skills": [s.strip() for s in args.skills.split(",") if s.strip()]})
         except ValueError as error:
             parser.error(str(error))
     elif args.command == "compare":

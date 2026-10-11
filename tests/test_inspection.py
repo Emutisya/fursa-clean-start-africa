@@ -7,6 +7,18 @@ from fursa.model import Matcher, Tfidf, tokens
 
 
 class InspectionTests(unittest.TestCase):
+    def test_term_sensitivity_exposes_generic_word_dependency_without_training_or_free_text(self):
+        matcher = Matcher()
+        result = matcher.term_sensitivity({"skills": ["customer service"]})
+        support = next(row for row in result["scenarios"] if row["omitted_term"] == "support")
+        self.assertIn("o-nursery", support["changes"]["opportunities"]["no_longer_returned"])
+        self.assertIn("o-dispatch", support["changes"]["opportunities"]["ranked"])
+        multiple = matcher.term_sensitivity({"skills": ["spreadsheets", "logistics"]})
+        inventory = next(row for row in multiple["scenarios"] if row["omitted_term"] == "inventory")
+        self.assertEqual(inventory["removed_occurrences"], 2)
+        with self.assertRaises(ValueError):
+            matcher.term_sensitivity({"skills": ["arbitrary biography"]})
+
     def test_resource_index_reuses_only_static_vectors_without_changing_ranking_precision(self):
         matcher = Matcher()
         payload = {"skills": ["solar", "electrical"]}
