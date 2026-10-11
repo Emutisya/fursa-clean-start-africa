@@ -37,3 +37,21 @@ def detail(identifier):
         "related_pathways": deepcopy([item for item in PATHWAYS if set(item["skills"]) & set(row["skills"])]),
         "message": "Evidence options are simulations, not requirements or proof of competence.",
     }
+
+
+def compare(identifiers):
+    if (not isinstance(identifiers, list) or not 2 <= len(identifiers) <= 4
+            or any(not isinstance(identifier, str) for identifier in identifiers)
+            or len(set(identifiers)) != len(identifiers)):
+        raise ValueError("Compare two to four distinct fictional resource IDs.")
+    rows = [detail(identifier)["resource"] for identifier in sorted(identifiers)]
+    shared = set(rows[0]["skills"]).intersection(*(set(row["skills"]) for row in rows[1:]))
+    return {
+        "synthetic": True, "human_review_required": True,
+        "resources": rows, "common_skills": sorted(shared),
+        "skill_matrix": {
+            skill: [row["id"] for row in rows if skill in row["skills"]]
+            for skill in sorted({skill for row in rows for skill in row["skills"]})
+        },
+        "message": "Catalogue similarities only; no preferred option, eligibility or outcome prediction.",
+    }

@@ -1,9 +1,20 @@
 import unittest
 
-from fursa.discovery import browse, detail
+from fursa.discovery import browse, compare, detail
 
 
 class DiscoveryTests(unittest.TestCase):
+    def test_comparison_is_order_independent_and_does_not_choose_a_winner(self):
+        result = compare(["o-accounts", "o-dispatch"])
+        self.assertEqual(result, compare(["o-dispatch", "o-accounts"]))
+        self.assertEqual(result["common_skills"], ["spreadsheets"])
+        self.assertEqual(result["skill_matrix"]["bookkeeping"], ["o-accounts"])
+        self.assertNotIn("winner", result)
+        for identifiers in ([], ["o-accounts"], ["o-accounts"] * 2,
+                            ["o-accounts", "unknown"], [None, "o-dispatch"], ["x"] * 5):
+            with self.assertRaises(ValueError):
+                compare(identifiers)
+
     def test_detail_connects_resources_to_simulated_evidence_and_pathways(self):
         result = detail("o-solar")
         self.assertEqual({item["id"] for item in result["evidence_options"]}, {"e-solar", "e-electrical"})
