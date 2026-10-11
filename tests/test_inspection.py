@@ -1,9 +1,21 @@
 import unittest
 
-from fursa.model import Matcher, Tfidf
+from fursa.catalog import corpus
+from fursa.model import Matcher, Tfidf, tokens
 
 
 class InspectionTests(unittest.TestCase):
+    def test_inspection_exposes_actual_fit_frequencies_and_resource_norms(self):
+        matcher = Matcher()
+        result = matcher.inspect()
+        self.assertEqual(result, Matcher().inspect())
+        for term in result["terms"]:
+            self.assertEqual(term["document_frequency"], sum(term["term"] in tokens(text) for text in corpus()))
+        for row in result["resources"]:
+            self.assertAlmostEqual(row["squared_norm"], 1)
+        result["terms"][0]["idf"] = -1
+        self.assertTrue(all(row["idf"] >= 1 for row in matcher.inspect()["terms"]))
+
     def test_contributions_reconstruct_cosine_without_truncated_explanation(self):
         row = Matcher().match({"skills": ["solar", "electrical"]})["opportunities"][0]
         contributions = row["term_contributions"]

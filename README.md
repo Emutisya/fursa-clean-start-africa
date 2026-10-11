@@ -114,6 +114,10 @@ score; the display similarity remains rounded. The first six terms remain in
 `shared_terms` for compact consumers. These are lexical explanations, not
 causal evidence about a person's abilities.
 
+`python -m fursa inspect` prints reproducible fitted vocabulary, IDF and actual
+fit-document frequencies, plus resource vector sizes/norms and corpus provenance.
+This is model inspection, not a new model or an outcome evaluation.
+
 Skill names and evidence IDs must exactly match `catalog`. Empty, duplicate, unknown or sensitive inputs are rejected. Selected evidence must belong to a selected skill. Evidence flags change gap explanations, **never the ranking**.
 
 Training produces inspectable learned IDF weights in an ignored `models` directory. The tiny model is fitted deterministically on startup for CLI and HTTP inference; the persisted file is an audit artifact, not a required runtime dependency. Editing the catalogue intentionally changes its fingerprint and requires regenerating the published evaluation.

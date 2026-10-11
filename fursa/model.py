@@ -26,6 +26,7 @@ class Tfidf:
         self.idf = {term: math.log((1 + len(docs)) / (1 + count)) + 1
                     for term, count in sorted(frequencies.items())}
         self.document_count = len(docs)
+        self.document_frequencies = dict(sorted(frequencies.items()))
         self.fingerprint = hashlib.sha256(
             json.dumps(documents, ensure_ascii=True).encode()).hexdigest()
 
@@ -98,6 +99,25 @@ def validate(payload):
 class Matcher:
     def __init__(self):
         self.model = Tfidf(corpus())
+
+    def inspect(self):
+        return {
+            "synthetic": True, "human_review_required": True,
+            "method": "smoothed-tfidf-logtf-l2", "corpus_sha256": self.model.fingerprint,
+            "fit_documents": self.model.document_count, "vocabulary_size": len(self.model.idf),
+            "terms": [
+                {"term": term, "idf": weight,
+                 "document_frequency": self.model.document_frequencies[term]}
+                for term, weight in self.model.idf.items()
+            ],
+            "resources": [
+                {"id": row["id"], "kind": row["kind"],
+                 "vector_terms": len(vector), "squared_norm": sum(value * value for value in vector.values())}
+                for row in sorted(OPPORTUNITIES + PATHWAYS, key=lambda row: row["id"])
+                for vector in [self.model.vector(document(row))]
+            ],
+            "message": "Inspect fitted fictional lexical statistics, not measured human performance.",
+        }
 
     def match(self, payload):
         skills, evidence = validate(payload)
