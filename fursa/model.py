@@ -5,6 +5,7 @@ import math
 import re
 from copy import deepcopy
 from collections import Counter
+from types import MappingProxyType
 
 from .catalog import EVIDENCE, OPPORTUNITIES, PATHWAYS, SKILLS, corpus, document, fingerprint, validate_catalog
 
@@ -57,13 +58,16 @@ class Tfidf:
             "has_vector": bool(known),
         }
 
-    def rank(self, text, items, limit=3):
+    def rank(self, text, items, limit=3, *, candidate_vectors=None):
         if type(limit) is not int or limit < 1:
             raise ValueError("Retrieval limit must be a positive integer.")
         query = self.vector(text)
         scored = []
         for item in items:
-            candidate = self.vector(document(item))
+            source = document(item)
+            candidate = candidate_vectors.get(source) if candidate_vectors is not None else None
+            if candidate is None:
+                candidate = self.vector(source)
             contributions = {term: value * candidate.get(term, 0)
                              for term, value in query.items() if term in candidate}
             score = sum(contributions.values())
@@ -118,6 +122,10 @@ class Matcher:
     def __init__(self):
         validate_catalog()
         self.model = Tfidf(corpus())
+        self._resource_vectors = MappingProxyType({
+            document(row): MappingProxyType(self.model.vector(document(row)))
+            for row in OPPORTUNITIES + PATHWAYS
+        })
 
     def inspect(self):
         return {
@@ -265,8 +273,8 @@ class Matcher:
             raise ValueError("Discovery limit must be an integer from 1 to 12.")
         skills, evidence = validate(payload)
         query = " ".join(SKILLS[skill] for skill in skills)
-        matches = self.model.rank(query, OPPORTUNITIES, limit)
-        pathways = self.model.rank(query, PATHWAYS, limit)
+        matches = self.model.rank(query, OPPORTUNITIES, limit, candidate_vectors=self._resource_vectors)
+        pathways = self.model.rank(query, PATHWAYS, limit, candidate_vectors=self._resource_vectors)
         for row in matches + pathways:
             row["shared_skills"] = sorted(set(skills) & set(row["skills"]))
             row["skills_to_explore"] = sorted(set(row["skills"]) - set(skills))

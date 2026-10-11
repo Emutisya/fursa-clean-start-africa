@@ -155,6 +155,12 @@ authentication of a server or issuer.
 fit-document frequencies, plus resource vector sizes/norms and corpus provenance.
 This is model inspection, not a new model or an outcome evaluation.
 
+Each matcher precomputes read-only vectors for its static fictional resources.
+Matching still computes current query vectors and ranks at full precision, but
+does not repeatedly normalize the same 21 resource documents. No user query or
+selection is cached. The uncached low-level ranker remains available for
+evaluation and equivalence checks; no latency improvement percentage is claimed.
+
 `python -m fursa inspect-term timber` traces an exact fitted vocabulary term
 to opportunity, pathway and `skill:` fit documents with raw term counts and
 normalized weights. It makes frequency-based IDF inspectable, not a real-world

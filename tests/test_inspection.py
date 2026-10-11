@@ -2,11 +2,26 @@ import unittest
 from copy import deepcopy
 from unittest.mock import patch
 
-from fursa.catalog import EVIDENCE, SKILLS, corpus, fingerprint
+from fursa.catalog import EVIDENCE, OPPORTUNITIES, PATHWAYS, SKILLS, corpus, fingerprint
 from fursa.model import Matcher, Tfidf, tokens
 
 
 class InspectionTests(unittest.TestCase):
+    def test_resource_index_reuses_only_static_vectors_without_changing_ranking_precision(self):
+        matcher = Matcher()
+        payload = {"skills": ["solar", "electrical"]}
+        query = " ".join(SKILLS[skill] for skill in sorted(payload["skills"]))
+        expected = {kind: matcher.model.rank(query, items)
+                    for kind, items in (("opportunities", OPPORTUNITIES), ("pathways", PATHWAYS))}
+        with patch.object(matcher.model, "vector", wraps=matcher.model.vector) as vector:
+            result = matcher.match(payload)
+            self.assertEqual(vector.call_count, 2)
+        for kind in expected:
+            self.assertEqual([(row["id"], row["similarity"], row["term_contributions"]) for row in result[kind]],
+                             [(row["id"], row["similarity"], row["term_contributions"]) for row in expected[kind]])
+        with self.assertRaises(TypeError):
+            next(iter(matcher._resource_vectors.values()))["new"] = 1
+
     def test_overlap_review_distinguishes_lexical_only_suggestions_from_catalogue_associations(self):
         report = Matcher().overlap_review({"skills": ["customer service"]})
         opportunities = report["reviews"]["opportunities"]
