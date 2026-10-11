@@ -209,6 +209,11 @@ leave-one-selection-out results, entered/dropped IDs and set Jaccard overlap.
 A sole removed skill is explicitly marked as an empty hypothetical selection,
 not sent as an invalid passport. This tests lexical dependence, not skill value.
 
+`python -m fursa audit-ranking --skills spreadsheets` reports every fictional
+opportunity/pathway cosine, whether it passes the fixed cutoff, and its signed
+distance from that cutoff. Unlike discovery, zero/below-cutoff rows are retained
+for inspection only. Margins are not confidence or suitability estimates.
+
 ```text
 Single-file HTML / Python CLI
           |

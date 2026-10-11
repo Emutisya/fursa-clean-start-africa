@@ -72,6 +72,16 @@ class Tfidf:
                                                       key=lambda term: (-contributions[term], term))[:6]}))
         return [row for _, row in sorted(scored, key=lambda item: (-item[0], item[1]["id"]))[:limit]]
 
+    def audit(self, text, items):
+        query = self.vector(text)
+        scored = []
+        for item in items:
+            candidate = self.vector(document(item))
+            score = sum(value * candidate.get(term, 0) for term, value in query.items())
+            scored.append({"id": item["id"], "cosine": score, "passes_cutoff": score >= MIN_SIMILARITY,
+                           "cutoff_margin": score - MIN_SIMILARITY})
+        return sorted(scored, key=lambda row: (-row["cosine"], row["id"]))
+
 
 def validate(payload):
     if not isinstance(payload, dict):
@@ -142,6 +152,17 @@ class Matcher:
             "baseline": [row["id"] for row in baseline["opportunities"]],
             "scenarios": scenarios,
             "message": "Leave-one-selection-out lexical sensitivity, not causal skill value or ability.",
+        }
+
+    def audit(self, payload):
+        skills, _ = validate(payload)
+        query = " ".join(SKILLS[skill] for skill in skills)
+        return {
+            "synthetic": True, "human_review_required": True,
+            "minimum_similarity": MIN_SIMILARITY,
+            "opportunities": self.model.audit(query, OPPORTUNITIES),
+            "pathways": self.model.audit(query, PATHWAYS),
+            "message": "All fictional resource cosines, including rejected results; not suitability or confidence.",
         }
 
     def match(self, payload, limit=3):

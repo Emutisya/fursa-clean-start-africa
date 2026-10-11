@@ -6,6 +6,19 @@ from fursa.model import Matcher, Tfidf, tokens
 
 
 class InspectionTests(unittest.TestCase):
+    def test_audit_includes_rejected_resources_and_matches_actual_rank_prefix(self):
+        matcher = Matcher()
+        payload = {"skills": ["spreadsheets"]}
+        audit = matcher.audit(payload)
+        accepted = [row for row in audit["opportunities"] if row["passes_cutoff"]]
+        ranked = matcher.match(payload)["opportunities"]
+        self.assertEqual([row["id"] for row in accepted[:3]], [row["id"] for row in ranked])
+        self.assertGreater(len(audit["opportunities"]), len(accepted))
+        for row in audit["opportunities"]:
+            self.assertAlmostEqual(row["cutoff_margin"], row["cosine"] - audit["minimum_similarity"])
+        gap = matcher.audit({"skills": ["astronomy"]})
+        self.assertFalse(any(row["passes_cutoff"] for row in gap["opportunities"]))
+
     def test_leave_one_out_sensitivity_exposes_empty_selection_and_resource_dependencies(self):
         matcher = Matcher()
         result = matcher.sensitivity({"skills": ["carpentry", "welding"]})
