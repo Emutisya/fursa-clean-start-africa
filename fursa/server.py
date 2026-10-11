@@ -1,6 +1,7 @@
 """Loopback-only, no telemetry, persistence, uploads or third-party requests."""
 import json
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
@@ -173,18 +174,51 @@ def make_server(port=8765, max_connections=8):
             super().__init__(("127.0.0.1", port), Handler)
             self.slots = threading.BoundedSemaphore(max_connections)
 
+        def drain_busy_request(self, request):
+            # Closing before the client's headers arrive can discard the 503 on Windows.
+            deadline = time.monotonic() + 1
+            def receive(count):
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise TimeoutError("Busy request drain deadline.")
+                request.settimeout(remaining)
+                return request.recv(count)
+            incoming = b""
+            while b"\r\n\r\n" not in incoming and len(incoming) < 8192:
+                chunk = receive(min(1024, 8192 - len(incoming)))
+                if not chunk:
+                    break
+                incoming += chunk
+            headers, separator, body = incoming.partition(b"\r\n\r\n")
+            if separator:
+                lines = headers.split(b"\r\n")
+                lengths = [line.partition(b":")[2].strip() for line in lines[1:]
+                           if line.partition(b":")[0].lower() == b"content-length"]
+                chunked = any(line.partition(b":")[0].lower() == b"transfer-encoding" for line in lines[1:])
+                if len(lengths) == 1 and lengths[0].isdigit() and not chunked:
+                    length = int(lengths[0])
+                    if length <= MAX_BODY:
+                        outstanding = max(0, length - len(body))
+                        while outstanding:
+                            chunk = receive(min(1024, outstanding))
+                            if not chunk:
+                                break
+                            outstanding -= len(chunk)
+            return incoming.startswith(b"HEAD ")
+
         def process_request(self, request, client_address):
             if not self.slots.acquire(blocking=False):
                 body = b'{"error":"Local server busy. Retry after another request finishes.","error_code":"server_busy"}'
                 try:
+                    head = self.drain_busy_request(request)
                     request.settimeout(1)
                     request.sendall(
                         b"HTTP/1.0 503 Service Unavailable\r\n"
                         b"Content-Type: application/json; charset=utf-8\r\n"
                         b"Cache-Control: no-store\r\nX-Content-Type-Options: nosniff\r\n"
                         b"Retry-After: 1\r\nConnection: close\r\nContent-Length: "
-                        + str(len(body)).encode("ascii") + b"\r\n\r\n" + body)
-                except OSError:
+                        + str(len(body)).encode("ascii") + b"\r\n\r\n" + (b"" if head else body))
+                except (OSError, ValueError):
                     pass
                 finally:
                     self.shutdown_request(request)

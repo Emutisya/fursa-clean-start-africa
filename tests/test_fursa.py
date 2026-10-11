@@ -264,6 +264,22 @@ class HttpTests(unittest.TestCase):
             with patch.object(server.RequestHandlerClass, "setup", setup):
                 held = socket.create_connection(("127.0.0.1", server.server_port), timeout=5)
                 self.assertTrue(started.wait(2))
+                fragmented = socket.create_connection(("127.0.0.1", server.server_port), timeout=5)
+                try:
+                    fragmented.sendall(
+                        f"GET /api/health HTTP/1.1\r\nHost: 127.0.0.1:{server.server_port}\r\n".encode("ascii"))
+                    fragmented.settimeout(.1)
+                    with self.assertRaises(TimeoutError):
+                        fragmented.recv(1)
+                    fragmented.sendall(b"\r\n")
+                    fragmented.settimeout(5)
+                    rejected = http.client.HTTPResponse(fragmented, method="GET")
+                    rejected.begin()
+                    self.assertEqual(rejected.status, 503)
+                    self.assertEqual(json.loads(rejected.read())["error_code"], "server_busy")
+                    rejected.close()
+                finally:
+                    fragmented.close()
                 conn = http.client.HTTPConnection("127.0.0.1", server.server_port, timeout=5)
                 conn.request("GET", "/api/health")
                 response = conn.getresponse()

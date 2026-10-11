@@ -400,6 +400,11 @@ handler threads. Excess connections receive 503 `server_busy` with `Retry-After:
 1`; disconnects/timeouts release capacity. This bounded localhost resource guard
 is not a production admission-control or denial-of-service guarantee.
 
+Capacity rejection briefly drains bounded request headers (8 KiB) and any
+well-framed body within the existing 4 KiB cap, under a one-second total drain
+deadline, before closing. This prevents an early Windows TCP close from losing
+the retry response; no rejected body is parsed as selections, logged or retained.
+
 Read-only routes support HEAD with the same status/content headers as GET and
 no body. Wrong methods on known routes return JSON 405 with `Allow` and
 `request_method_not_allowed`; unknown routes stay 404. OPTIONS does not grant
