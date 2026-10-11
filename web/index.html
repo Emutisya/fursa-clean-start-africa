@@ -90,7 +90,7 @@ p { margin:8px 0 16px }
 .presets { display:flex; flex-wrap:wrap; gap:8px; margin:12px 0 24px }
 button { font:inherit; cursor:pointer; border:1px solid var(--cp-border); color:var(--cp-text); background:var(--cp-surface); border-radius:10px; padding:8px 12px }
 button:hover { border-color:var(--cp-accent); background:var(--cp-accent-soft) }
-button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible { outline:3px solid var(--cp-accent); outline-offset:3px }
+button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible,summary:focus-visible { outline:3px solid var(--cp-accent); outline-offset:3px }
 button.primary { color:var(--cp-accent-fg); background:var(--cp-accent); border-color:var(--cp-accent); font-weight:650; width:100%; padding:12px }
 button.primary:hover { background:var(--cp-accent-hover) }
 button:disabled { opacity:.55; cursor:wait }
@@ -192,11 +192,15 @@ function invalidate() {
 }
 function refresh() {
   if (!catalog) return;
+  const focus = document.activeElement.dataset;
+  const focusedSkill = focus.skill;
+  const focusedEvidence = focus.evidence;
   const skills = skillValues();
   selectedEvidence = new Set([...selectedEvidence].filter(id => catalog.evidence.some(e => e.id===id && skills.includes(e.skill))));
   $("chips").replaceChildren();
   for (const skill of catalog.skills) {
     const button=element("button",skill,"chip"); button.type="button";
+    button.dataset.skill=skill;
     button.setAttribute("aria-pressed",String(skills.includes(skill)));
     button.onclick=() => {
       const next=skillValues();
@@ -209,6 +213,7 @@ function refresh() {
   for (const sample of catalog.evidence.filter(e=>skills.includes(e.skill))) {
     const label=element("label"), checkbox=element("input");
     checkbox.type="checkbox"; checkbox.checked=selectedEvidence.has(sample.id);
+    checkbox.dataset.evidence=sample.id;
     checkbox.onchange=() => {
       checkbox.checked?selectedEvidence.add(sample.id):selectedEvidence.delete(sample.id);
       invalidate(); refresh();
@@ -218,6 +223,11 @@ function refresh() {
   }
   if (!$("evidence").childNodes.length) $("evidence").append(element("p","No simulated samples available for these selections.","small muted"));
   $("passport").textContent=`${skills.length} selected skill(s) · ${selectedEvidence.size} simulated sample(s)\n${skills.join(" · ") || "No skills selected."}`;
+  if (focusedSkill || focusedEvidence) {
+    const replacement=[...document.querySelectorAll("[data-skill], [data-evidence]")].find(node=>
+      focusedSkill ? node.dataset.skill===focusedSkill : node.dataset.evidence===focusedEvidence);
+    (replacement || $("skills")).focus();
+  }
 }
 function render(result) {
   const container=$("results"); container.replaceChildren();
