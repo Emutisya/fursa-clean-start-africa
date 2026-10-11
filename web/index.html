@@ -520,7 +520,7 @@ document.querySelectorAll("[data-preset]").forEach(button=>button.onclick=()=>{
 $("reset").onclick=()=>{ $("skills").value=""; selectedEvidence.clear(); comparison.clear(); refreshComparison(); invalidate(); refresh(); setStatus("Selections cleared. No server data was stored."); };
 $("export").onclick=()=>{
   if (!lastResult) { setStatus("Explore first to export a validated synthetic passport.",true); return; }
-  const passport={project:"Fursa | Clean Start Africa",synthetic:true,credential_issued:false,human_review_required:true,...lastResult.passport};
+  const passport=lastResult.portable_passport;
   const url=URL.createObjectURL(new Blob([JSON.stringify(passport,null,2)],{type:"application/json"}));
   const link=element("a"); link.href=url; link.download="fursa-synthetic-passport.json"; link.click();
   setTimeout(()=>URL.revokeObjectURL(url),1000);

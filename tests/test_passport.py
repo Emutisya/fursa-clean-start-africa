@@ -1,11 +1,18 @@
 import unittest
 import json
 from unittest.mock import patch
+from fursa.model import Matcher
 
 from fursa.passport import checksum, compare_selections, edit_selections, export_passport, import_passport, merge_selections
 
 
 class PassportTests(unittest.TestCase):
+    def test_match_embeds_the_same_portable_envelope_as_cli_export(self):
+        payload = {"skills": ["carpentry"], "evidence": ["e-carpentry"]}
+        result = Matcher().match(payload)
+        self.assertEqual(result["portable_passport"], export_passport(payload))
+        self.assertEqual(import_passport(json.dumps(result["portable_passport"]).encode()), payload)
+
     def test_edits_remove_attached_simulations_and_reject_ambiguous_intent(self):
         before = {"skills": ["carpentry"], "evidence": ["e-carpentry"]}
         result = edit_selections(before, {"remove_skills": ["carpentry"], "add_skills": ["welding"]})

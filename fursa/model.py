@@ -205,6 +205,8 @@ class Matcher:
         }
 
     def match(self, payload, limit=3):
+        from .passport import export_passport
+
         if type(limit) is not int or not 1 <= limit <= 12:
             raise ValueError("Discovery limit must be an integer from 1 to 12.")
         skills, evidence = validate(payload)
@@ -224,6 +226,7 @@ class Matcher:
                 "query_sha256": hashlib.sha256(query.encode("utf-8")).hexdigest(),
             },
             "passport": {"skills": skills, "evidence": evidence, "verification": "Unverified synthetic selections"},
+            "portable_passport": export_passport({"skills": skills, "evidence": evidence}),
             "opportunities": matches,
             "pathways": self.model.rank(query, PATHWAYS, limit),
             "message": "Discovery only. Similarities are not probabilities, employability scores or hiring decisions.",

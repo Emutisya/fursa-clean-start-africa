@@ -186,12 +186,12 @@ canonical sorted selections, explicit unverified/synthetic/human-review flags,
 catalogue fingerprint and a canonical content checksum. There are no names,
 identifiers for people, artifacts or issuer claims. Checksums detect accidental
 changes; they are not signatures, authentication or recognized credentials.
-The dashboard's existing simple export remains a separate legacy format.
+Dashboard exports use the same versioned envelope and can be validated by the CLI.
 
 `python -m fursa import-passport models\passport.json` validates the versioned
 envelope before matching. It rejects unknown fields, duplicate JSON keys,
 non-UTF-8/oversized files, noncanonical selections, changed safety flags,
-checksum mismatches and a different catalogue fingerprint. Legacy dashboard
+checksum mismatches and a different catalogue fingerprint. Older legacy dashboard
 exports are intentionally not silently converted. Import is local and does not
 upload or store a profile. A stale catalogue requires deliberate review/re-export.
 

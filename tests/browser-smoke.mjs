@@ -3,6 +3,8 @@
 import assert from "node:assert/strict";
 import {mkdir, readFile, unlink} from "node:fs/promises";
 import {resolve} from "node:path";
+import {execFile} from "node:child_process";
+import {promisify} from "node:util";
 
 const app = process.argv[2] || "http://127.0.0.1:8769";
 const debuggerUrl = process.argv[3] || "http://127.0.0.1:9229";
@@ -92,8 +94,11 @@ try {
   }
   assert(passport, "Synthetic passport download did not complete.");
   assert.equal(passport.synthetic,true);
-  assert.equal(passport.credential_issued,false);
+  assert.equal(passport.schema,"fursa.synthetic-passport.v1");
+  assert.equal(passport.verification,"Unverified synthetic selections");
   assert.deepEqual(passport.skills,["bookkeeping","customer service","spreadsheets"]);
+  const imported=await promisify(execFile)("python",["-m","fursa","import-passport",exportFile],{timeout:10000});
+  assert.equal(JSON.parse(imported.stdout).opportunities[0].id,"o-accounts");
   await unlink(exportFile);
   await evaluate(`document.querySelector('[data-preset="unmatched"]').click()`);
   await waitFor(`document.getElementById("results").textContent.includes("No relevant catalogue match")`);
